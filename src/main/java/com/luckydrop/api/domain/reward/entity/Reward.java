@@ -30,6 +30,9 @@ public class Reward {
     @Column
     private Integer stock;
 
+    @Column(length = 500)
+    private String image;
+
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
 

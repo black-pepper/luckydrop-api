@@ -27,6 +27,7 @@ CREATE TABLE reward (
     description TEXT,
     weight      INT          NOT NULL DEFAULT 1,
     stock       INT,
+    image       VARCHAR(500),
     is_active   BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at  TIMESTAMP    NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMP    NOT NULL DEFAULT NOW()

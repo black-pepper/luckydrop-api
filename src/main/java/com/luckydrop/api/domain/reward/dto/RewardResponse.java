@@ -15,6 +15,7 @@ public class RewardResponse {
     private final Double probability;
     private final Integer stock;
     private final boolean unlimited;
+    private final String imageUrl;
 
     public RewardResponse(Reward reward, int totalWeight) {
         this.id = reward.getId();
@@ -26,6 +27,7 @@ public class RewardResponse {
                 : 0.0;
         this.stock = reward.getStock();
         this.unlimited = reward.isUnlimitedStock();
+        this.imageUrl = reward.getImage();
     }
 
     public static List<RewardResponse> of(List<Reward> rewards) {

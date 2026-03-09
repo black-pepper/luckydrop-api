@@ -10,6 +10,7 @@ public class DrawResponse {
 
     private final Long drawResultId;
     private final String rewardName;
+    private final String rewardImageUrl;
     private final int drawNo;
     private final int remainingCount;
     private final LocalDateTime drawnAt;
@@ -17,6 +18,7 @@ public class DrawResponse {
     public DrawResponse(DrawResult result, int remainingCount) {
         this.drawResultId = result.getId();
         this.rewardName = result.getRewardNameSnapshot();
+        this.rewardImageUrl = result.getReward().getImage();
         this.drawNo = result.getDrawNo();
         this.remainingCount = remainingCount;
         this.drawnAt = result.getDrawnAt();
