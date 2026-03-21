@@ -17,14 +17,11 @@ public class CodeService {
 
     @Transactional(readOnly = true)
     public CodeVerifyResponse verifyCode(String code) {
-        DrawCode drawCode = drawCodeRepository.findByCodeWithParticipant(code)
+        DrawCode drawCode = drawCodeRepository.findByCodeWithContent(code)
                 .orElseThrow(() -> new DrawEventException(ErrorCode.CODE_NOT_FOUND));
 
         if (!drawCode.isActive()) {
             throw new DrawEventException(ErrorCode.CODE_INACTIVE);
-        }
-        if (drawCode.getParticipant().isInactive()) {
-            throw new DrawEventException(ErrorCode.PARTICIPANT_INACTIVE);
         }
         if (drawCode.isExpired()) {
             throw new DrawEventException(ErrorCode.CODE_EXPIRED);

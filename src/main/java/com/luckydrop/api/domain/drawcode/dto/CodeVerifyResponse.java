@@ -11,7 +11,9 @@ public class CodeVerifyResponse {
     private final boolean canDraw;
 
     public CodeVerifyResponse(DrawCode drawCode) {
-        this.maskedName = drawCode.getParticipant().getName();
+        this.maskedName = drawCode.getName() == null || drawCode.getName().isBlank()
+                ? drawCode.getCode()
+                : drawCode.getName();
         this.remainingCount = drawCode.getRemainingCount();
         this.canDraw = drawCode.getRemainingCount() > 0;
     }

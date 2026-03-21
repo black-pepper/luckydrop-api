@@ -21,21 +21,10 @@ public class ResultService {
 
     @Transactional(readOnly = true)
     public List<DrawResultResponse> getResultsByCode(String code) {
-        DrawCode drawCode = drawCodeRepository.findByCodeWithParticipant(code)
+        DrawCode drawCode = drawCodeRepository.findByCodeWithContent(code)
                 .orElseThrow(() -> new DrawEventException(ErrorCode.CODE_NOT_FOUND));
 
         return drawResultRepository.findByDrawCodeIdOrderByDrawnAtDesc(drawCode.getId())
-                .stream()
-                .map(DrawResultResponse::new)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<DrawResultResponse> getResultsByParticipant(String code) {
-        DrawCode drawCode = drawCodeRepository.findByCodeWithParticipant(code)
-                .orElseThrow(() -> new DrawEventException(ErrorCode.CODE_NOT_FOUND));
-
-        return drawResultRepository.findByParticipantIdOrderByDrawnAtDesc(drawCode.getParticipant().getId())
                 .stream()
                 .map(DrawResultResponse::new)
                 .toList();

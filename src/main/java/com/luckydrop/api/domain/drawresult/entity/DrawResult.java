@@ -1,17 +1,25 @@
 package com.luckydrop.api.domain.drawresult.entity;
 
+import com.luckydrop.api.domain.content.entity.Content;
 import com.luckydrop.api.domain.drawcode.entity.DrawCode;
-import com.luckydrop.api.domain.participant.entity.Participant;
 import com.luckydrop.api.domain.reward.entity.Reward;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "draw_result")
+@Table(name = "draw_results")
 @Getter
 @NoArgsConstructor
 public class DrawResult {
@@ -21,34 +29,29 @@ public class DrawResult {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "draw_code_id", nullable = false)
+    @JoinColumn(name = "invitation_code_id", nullable = false)
     private DrawCode drawCode;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "participant_id", nullable = false)
-    private Participant participant;
+    @JoinColumn(name = "content_id", nullable = false)
+    private Content content;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reward_id", nullable = false)
     private Reward reward;
 
-    @Column(name = "reward_name_snapshot", nullable = false, length = 200)
-    private String rewardNameSnapshot;
-
     @Column(name = "draw_no", nullable = false)
     private int drawNo;
 
     @Column(name = "drawn_at", nullable = false)
-    private LocalDateTime drawnAt;
+    private OffsetDateTime drawnAt;
 
     @Builder
-    public DrawResult(DrawCode drawCode, Participant participant, Reward reward,
-                      String rewardNameSnapshot, int drawNo) {
+    public DrawResult(DrawCode drawCode, Content content, Reward reward, int drawNo) {
         this.drawCode = drawCode;
-        this.participant = participant;
+        this.content = content;
         this.reward = reward;
-        this.rewardNameSnapshot = rewardNameSnapshot;
         this.drawNo = drawNo;
-        this.drawnAt = LocalDateTime.now();
+        this.drawnAt = OffsetDateTime.now();
     }
 }
