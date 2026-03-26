@@ -11,10 +11,10 @@ import java.util.Optional;
 
 public interface DrawCodeRepository extends JpaRepository<DrawCode, Long> {
 
-    @Query("SELECT dc FROM DrawCode dc JOIN FETCH dc.participant WHERE dc.code = :code")
-    Optional<DrawCode> findByCodeWithParticipant(@Param("code") String code);
+    @Query("SELECT dc FROM DrawCode dc JOIN FETCH dc.content WHERE dc.code = :code")
+    Optional<DrawCode> findByCodeWithContent(@Param("code") String code);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT dc FROM DrawCode dc JOIN FETCH dc.participant WHERE dc.code = :code")
+    @Query("SELECT dc FROM DrawCode dc JOIN FETCH dc.content WHERE dc.code = :code")
     Optional<DrawCode> findByCodeWithLock(@Param("code") String code);
 }
