@@ -2,6 +2,15 @@
 
 이 폴더는 AI 작업용 공통 규칙, 목적별 프롬프트, 프롬프트 초안 템플릿을 관리한다.
 
+## Project Summary
+- 기술 스택: Java 21, Spring Boot 4, Spring MVC, JPA, PostgreSQL
+- 프로젝트 성격: 추첨 이벤트 백엔드 API
+- 핵심 API: `/api/draw/verify`, `/api/draw/execute`, `/api/draw/results`, `/api/draw/rewards`
+- 핵심 도메인: `Content`, `DrawCode`, `Reward`, `DrawResult`, `User`
+- 핵심 흐름: 코드 검증 -> 남은 횟수 확인 -> 보상 조회 -> 가중치 추첨 -> 재고 차감 -> 결과 저장
+- 주요 규칙: 비관적 락 사용, 중복 보상 허용 여부 반영, 재고 소진 보상 제외
+- 테스트 상태: 기본 애플리케이션 로딩 테스트만 존재
+
 ## Recommended Flow
 1. 새 작업 번호를 정하고 `templates/prompt-draft-template.md`를 기준으로 초안을 만든다.
 2. 초안에 작업 목표, 범위, 제약, 검토 포인트를 채운다.
