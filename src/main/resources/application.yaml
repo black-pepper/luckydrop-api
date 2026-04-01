@@ -1,8 +1,6 @@
 spring:
   application:
     name: luckydrop-api
-  profiles:
-    default: local
   datasource:
     url: ${DB_URL}?reWriteBatchedInserts=true&prepareThreshold=0
     username: ${DB_USERNAME}

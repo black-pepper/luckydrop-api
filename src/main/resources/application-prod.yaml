@@ -7,7 +7,7 @@ app:
   security:
     cors:
       allowed-origins:
-        - ${APP_CORS_ALLOWED_ORIGIN:https://luckydrop.lovable.app}
+        - ${APP_CORS_ALLOWED_ORIGIN:https://luckydrop.pages.dev}
     jwt:
       issuer-uri: ${SUPABASE_ISSUER_URI}
       jwk-set-uri: ${SUPABASE_JWK_SET_URI:${SUPABASE_ISSUER_URI}/.well-known/jwks.json}
