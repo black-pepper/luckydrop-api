@@ -1,0 +1,29 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+logging:
+  level:
+    com.luckydrop.api: INFO
+
+app:
+  security:
+    cors:
+      allowed-origins:
+        - ${APP_CORS_ALLOWED_ORIGIN:https://luckydrop.pages.dev}
+    jwt:
+      issuer-uri: ${SUPABASE_ISSUER_URI}
+      jwk-set-uri: ${SUPABASE_JWK_SET_URI:${SUPABASE_ISSUER_URI}/.well-known/jwks.json}
+      audience: ${SUPABASE_JWT_AUDIENCE:authenticated}
+    public-paths:
+      - /error
+      - /api/draw/**
+      - /actuator/health
+      - /actuator/info
