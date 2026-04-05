@@ -13,15 +13,26 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class ProdSecurityConfig extends BaseSecurityConfig {
 
     @Bean
-    SecurityFilterChain prodSecurityFilterChain(HttpSecurity http, SecurityProperties securityProperties) throws Exception {
-        applyCommon(http, securityProperties);
+    SecurityFilterChain prodSecurityFilterChain(
+            HttpSecurity http,
+            SecurityProperties securityProperties,
+            SilentAuthenticationEntryPoint silentAuthenticationEntryPoint
+    ) throws Exception {
+        applyCommon(http, securityProperties, silentAuthenticationEntryPoint);
         return http
                 .authorizeHttpRequests(auth -> {
                     configurePublicEndpoints(auth, securityProperties);
                     auth.anyRequest().authenticated();
                 })
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(prodJwtDecoder(securityProperties))))
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .authenticationEntryPoint(silentAuthenticationEntryPoint)
+                        .jwt(jwt -> jwt.decoder(prodJwtDecoder(securityProperties))))
                 .build();
+    }
+
+    @Bean
+    SilentAuthenticationEntryPoint prodAuthenticationEntryPoint() {
+        return new SilentAuthenticationEntryPoint();
     }
 
     @Bean

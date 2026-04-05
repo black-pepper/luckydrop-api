@@ -3,6 +3,16 @@ spring:
     activate:
       on-profile: prod
 
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+logging:
+  level:
+    com.luckydrop.api: INFO
+
 app:
   security:
     cors:

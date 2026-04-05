@@ -12,14 +12,23 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class LocalSecurityConfig extends BaseSecurityConfig {
 
     @Bean
-    SecurityFilterChain localSecurityFilterChain(HttpSecurity http, SecurityProperties securityProperties) throws Exception {
-        applyCommon(http, securityProperties);
+    SecurityFilterChain localSecurityFilterChain(
+            HttpSecurity http,
+            SecurityProperties securityProperties,
+            SilentAuthenticationEntryPoint silentAuthenticationEntryPoint
+    ) throws Exception {
+        applyCommon(http, securityProperties, silentAuthenticationEntryPoint);
         return http
                 .authorizeHttpRequests(auth -> {
                     configurePublicEndpoints(auth, securityProperties);
                     auth.anyRequest().permitAll();
                 })
                 .build();
+    }
+
+    @Bean
+    SilentAuthenticationEntryPoint localAuthenticationEntryPoint() {
+        return new SilentAuthenticationEntryPoint();
     }
 
     @Bean

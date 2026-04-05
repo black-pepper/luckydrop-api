@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.util.StringUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -19,9 +20,14 @@ import java.util.List;
 
 abstract class BaseSecurityConfig {
 
-    protected void applyCommon(HttpSecurity http, SecurityProperties securityProperties) throws Exception {
+    protected void applyCommon(
+            HttpSecurity http,
+            SecurityProperties securityProperties,
+            LoggingAuthenticationEntryPoint authenticationEntryPoint
+    ) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource(securityProperties)))
+                .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(authenticationEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
     }
 
@@ -51,8 +57,12 @@ abstract class BaseSecurityConfig {
         String jwkSetUri = securityProperties.getJwt().getJwkSetUri();
 
         NimbusJwtDecoder jwtDecoder = StringUtils.hasText(jwkSetUri)
-                ? NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build()
-                : NimbusJwtDecoder.withIssuerLocation(issuerUri).build();
+                ? NimbusJwtDecoder.withJwkSetUri(jwkSetUri)
+                .jwsAlgorithm(SignatureAlgorithm.ES256)
+                .build()
+                : NimbusJwtDecoder.withIssuerLocation(issuerUri)
+                .jwsAlgorithm(SignatureAlgorithm.ES256)
+                .build();
 
         OAuth2TokenValidator<Jwt> validator = JwtValidators.createDefaultWithIssuer(issuerUri);
         if (StringUtils.hasText(securityProperties.getJwt().getAudience())) {

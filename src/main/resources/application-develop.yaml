@@ -3,6 +3,10 @@ spring:
     activate:
       on-profile: develop
 
+logging:
+  level:
+    com.luckydrop.api: DEBUG
+
 app:
   security:
     cors:

@@ -13,15 +13,26 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class DevelopSecurityConfig extends BaseSecurityConfig {
 
     @Bean
-    SecurityFilterChain developSecurityFilterChain(HttpSecurity http, SecurityProperties securityProperties) throws Exception {
-        applyCommon(http, securityProperties);
+    SecurityFilterChain developSecurityFilterChain(
+            HttpSecurity http,
+            SecurityProperties securityProperties,
+            LoggingAuthenticationEntryPoint loggingAuthenticationEntryPoint
+    ) throws Exception {
+        applyCommon(http, securityProperties, loggingAuthenticationEntryPoint);
         return http
                 .authorizeHttpRequests(auth -> {
                     configurePublicEndpoints(auth, securityProperties);
                     auth.anyRequest().authenticated();
                 })
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(developJwtDecoder(securityProperties))))
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .authenticationEntryPoint(loggingAuthenticationEntryPoint)
+                        .jwt(jwt -> jwt.decoder(developJwtDecoder(securityProperties))))
                 .build();
+    }
+
+    @Bean
+    LoggingAuthenticationEntryPoint developAuthenticationEntryPoint() {
+        return new LoggingAuthenticationEntryPoint();
     }
 
     @Bean

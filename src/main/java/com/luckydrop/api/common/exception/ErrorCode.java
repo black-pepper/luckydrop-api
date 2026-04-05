@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ErrorCode {
 
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증 정보가 없습니다."),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 인증 정보에 매핑된 사용자를 찾을 수 없습니다."),
     CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 코드입니다."),
     CODE_INACTIVE(HttpStatus.BAD_REQUEST, "비활성화된 코드입니다."),
     CODE_EXPIRED(HttpStatus.BAD_REQUEST, "만료된 코드입니다."),
