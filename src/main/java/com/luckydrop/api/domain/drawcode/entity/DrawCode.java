@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,7 +19,10 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "invitation_codes")
+@Table(
+        name = "invitation_codes",
+        uniqueConstraints = @UniqueConstraint(name = "invitation_codes_content_id_code_key", columnNames = {"content_id", "code"})
+)
 @Getter
 @NoArgsConstructor
 public class DrawCode {
@@ -27,7 +31,7 @@ public class DrawCode {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(nullable = false, length = 100)
     private String code;
 
     @Column

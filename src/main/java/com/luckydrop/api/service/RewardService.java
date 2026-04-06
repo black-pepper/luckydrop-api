@@ -24,8 +24,8 @@ public class RewardService {
     private final DrawResultRepository drawResultRepository;
 
     @Transactional(readOnly = true)
-    public List<RewardResponse> getAvailableRewards(String code) {
-        DrawCode drawCode = drawCodeRepository.findByCodeWithContent(code)
+    public List<RewardResponse> getAvailableRewards(String contentCode, String invitationCode) {
+        DrawCode drawCode = drawCodeRepository.findByContentCodeAndCodeWithContent(contentCode, invitationCode)
                 .orElseThrow(() -> new DrawEventException(ErrorCode.CODE_NOT_FOUND));
 
         Set<Long> drawnRewardIds = drawResultRepository.findRewardIdsByDrawCodeId(drawCode.getId());

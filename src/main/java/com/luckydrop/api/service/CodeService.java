@@ -16,8 +16,8 @@ public class CodeService {
     private final DrawCodeRepository drawCodeRepository;
 
     @Transactional(readOnly = true)
-    public CodeVerifyResponse verifyCode(String code) {
-        DrawCode drawCode = drawCodeRepository.findByCodeWithContent(code)
+    public CodeVerifyResponse verifyCode(String contentCode, String invitationCode) {
+        DrawCode drawCode = drawCodeRepository.findByContentCodeAndCodeWithContent(contentCode, invitationCode)
                 .orElseThrow(() -> new DrawEventException(ErrorCode.CODE_NOT_FOUND));
 
         if (!drawCode.isActive()) {

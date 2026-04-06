@@ -26,6 +26,9 @@ public class Content {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true, length = 100)
+    private String code;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
@@ -45,6 +48,25 @@ public class Content {
 
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
+
+    public Content(String code, String type, User user, String title, String description) {
+        this.code = code;
+        this.type = type;
+        this.user = user;
+        this.title = title;
+        this.description = description;
+    }
+
+    public void update(String type, User user, String title, String description) {
+        this.type = type;
+        this.user = user;
+        this.title = title;
+        this.description = description;
+    }
+
+    public void delete() {
+        this.deletedAt = OffsetDateTime.now();
+    }
 
     public boolean isDeleted() {
         return deletedAt != null;
