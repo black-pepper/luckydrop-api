@@ -35,7 +35,7 @@ create table public.invitation_codes (
   allowed_draw_count integer not null,
   used_draw_count integer not null default 0,
   constraint invitation_codes_pkey primary key (id),
-  constraint invitation_codes_code_key unique (code),
+  constraint invitation_codes_content_id_code_key unique (content_id, code),
   constraint invitation_codes_content_id_fkey foreign key (content_id) references public.contents (id),
   constraint invitation_codes_allowed_draw_count_check check (allowed_draw_count >= 0),
   constraint invitation_codes_used_draw_count_check check (used_draw_count >= 0),

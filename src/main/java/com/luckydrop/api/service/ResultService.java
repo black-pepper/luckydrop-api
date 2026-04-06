@@ -20,8 +20,8 @@ public class ResultService {
     private final DrawCodeRepository drawCodeRepository;
 
     @Transactional(readOnly = true)
-    public List<DrawResultResponse> getResultsByCode(String code) {
-        DrawCode drawCode = drawCodeRepository.findByCodeWithContent(code)
+    public List<DrawResultResponse> getResultsByCode(String contentCode, String invitationCode) {
+        DrawCode drawCode = drawCodeRepository.findByContentCodeAndCodeWithContent(contentCode, invitationCode)
                 .orElseThrow(() -> new DrawEventException(ErrorCode.CODE_NOT_FOUND));
 
         return drawResultRepository.findByDrawCodeIdOrderByDrawnAtDesc(drawCode.getId())

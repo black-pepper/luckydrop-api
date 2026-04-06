@@ -31,7 +31,10 @@ public class DrawService {
 
     @Transactional
     public DrawResponse draw(DrawRequest request) {
-        DrawCode drawCode = drawCodeRepository.findByCodeWithLock(request.getCode())
+        DrawCode drawCode = drawCodeRepository.findByContentCodeAndCodeWithLock(
+                        request.getContentCode(),
+                        request.getInvitationCode()
+                )
                 .orElseThrow(() -> new DrawEventException(ErrorCode.CODE_NOT_FOUND));
 
         validateDrawCode(drawCode);
@@ -61,7 +64,13 @@ public class DrawService {
 
         drawCode.use();
 
-        log.info("Draw completed - code: {}, reward: {}, drawNo: {}", request.getCode(), selectedReward.getName(), drawNo);
+        log.info(
+                "Draw completed - contentCode: {}, invitationCode: {}, reward: {}, drawNo: {}",
+                request.getContentCode(),
+                request.getInvitationCode(),
+                selectedReward.getName(),
+                drawNo
+        );
 
         return new DrawResponse(result, drawCode.getRemainingCount());
     }
