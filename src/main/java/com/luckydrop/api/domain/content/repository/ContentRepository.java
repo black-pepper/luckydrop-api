@@ -19,8 +19,9 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
             SELECT c
             FROM Content c
             LEFT JOIN FETCH c.user
-            WHERE c.deletedAt IS NULL
+            WHERE c.user.id = :userId
+              AND c.deletedAt IS NULL
             ORDER BY c.createdAt DESC
             """)
-    List<Content> findAllActiveWithUser();
+    List<Content> findAllActiveByUserIdWithUser(@Param("userId") Long userId);
 }

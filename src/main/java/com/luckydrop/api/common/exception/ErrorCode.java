@@ -11,7 +11,6 @@ public enum ErrorCode {
     CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 콘텐츠입니다."),
     CONTENT_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "이미 삭제된 콘텐츠입니다."),
     CONTENT_TYPE_INVALID(HttpStatus.BAD_REQUEST, "콘텐츠 타입이 올바르지 않습니다."),
-    CONTENT_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."),
     CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 코드입니다."),
     CODE_INACTIVE(HttpStatus.BAD_REQUEST, "비활성화된 코드입니다."),
     CODE_EXPIRED(HttpStatus.BAD_REQUEST, "만료된 코드입니다."),

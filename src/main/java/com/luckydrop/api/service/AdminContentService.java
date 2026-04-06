@@ -10,7 +10,6 @@ import com.luckydrop.api.domain.content.dto.AdminContentUpdateRequest;
 import com.luckydrop.api.domain.content.entity.Content;
 import com.luckydrop.api.domain.content.repository.ContentRepository;
 import com.luckydrop.api.domain.user.entity.User;
-import com.luckydrop.api.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,12 +26,12 @@ public class AdminContentService {
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of("DRAW", "QUIZ");
 
     private final ContentRepository contentRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
     @Transactional
     public AdminContentResponse create(AdminContentCreateRequest request) {
         String type = normalizeType(request.getType());
-        User user = getUser(request.getUserId());
+        User user = currentUserService.getCurrentUserEntity();
 
         Content content = new Content(
                 generateUniqueCode(),
@@ -47,12 +46,14 @@ public class AdminContentService {
 
     @Transactional(readOnly = true)
     public AdminContentDetailResponse getDetail(String contentCode) {
-        return new AdminContentDetailResponse(getActiveContent(contentCode));
+        return new AdminContentDetailResponse(getOwnedActiveContent(contentCode));
     }
 
     @Transactional(readOnly = true)
     public List<AdminContentResponse> getContents() {
-        return contentRepository.findAllActiveWithUser()
+        Long currentUserId = currentUserService.getCurrentUserEntity().getId();
+
+        return contentRepository.findAllActiveByUserIdWithUser(currentUserId)
                 .stream()
                 .map(AdminContentResponse::new)
                 .toList();
@@ -60,9 +61,9 @@ public class AdminContentService {
 
     @Transactional
     public AdminContentResponse update(String contentCode, AdminContentUpdateRequest request) {
-        Content content = getUpdatableContent(contentCode);
+        Content content = getOwnedUpdatableContent(contentCode);
         String type = normalizeType(request.getType());
-        User user = getUser(request.getUserId());
+        User user = currentUserService.getCurrentUserEntity();
 
         content.update(type, user, request.getTitle(), request.getDescription());
 
@@ -71,34 +72,37 @@ public class AdminContentService {
 
     @Transactional
     public AdminContentDeleteResponse delete(String contentCode) {
-        Content content = getUpdatableContent(contentCode);
+        Content content = getOwnedUpdatableContent(contentCode);
         content.delete();
         return new AdminContentDeleteResponse(content.getCode());
     }
 
-    private Content getActiveContent(String contentCode) {
+    private Content getOwnedActiveContent(String contentCode) {
         Content content = contentRepository.findByCodeWithUser(contentCode)
                 .orElseThrow(() -> new DrawEventException(ErrorCode.CONTENT_NOT_FOUND));
 
-        if (content.isDeleted()) {
+        if (content.isDeleted() || !isOwnedByCurrentUser(content)) {
             throw new DrawEventException(ErrorCode.CONTENT_NOT_FOUND);
         }
         return content;
     }
 
-    private Content getUpdatableContent(String contentCode) {
+    private Content getOwnedUpdatableContent(String contentCode) {
         Content content = contentRepository.findByCodeWithUser(contentCode)
                 .orElseThrow(() -> new DrawEventException(ErrorCode.CONTENT_NOT_FOUND));
 
+        if (!isOwnedByCurrentUser(content)) {
+            throw new DrawEventException(ErrorCode.CONTENT_NOT_FOUND);
+        }
         if (content.isDeleted()) {
             throw new DrawEventException(ErrorCode.CONTENT_ALREADY_DELETED);
         }
         return content;
     }
 
-    private User getUser(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new DrawEventException(ErrorCode.CONTENT_USER_NOT_FOUND));
+    private boolean isOwnedByCurrentUser(Content content) {
+        User currentUser = currentUserService.getCurrentUserEntity();
+        return content.getUser() != null && content.getUser().getId().equals(currentUser.getId());
     }
 
     private String normalizeType(String type) {

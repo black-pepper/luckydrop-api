@@ -13,7 +13,6 @@ public class AdminContentResponse {
     private final String title;
     private final String description;
     private final OffsetDateTime createdAt;
-    private final AdminContentAuthorResponse author;
 
     public AdminContentResponse(Content content) {
         this.code = content.getCode();
@@ -21,6 +20,5 @@ public class AdminContentResponse {
         this.title = content.getTitle();
         this.description = content.getDescription();
         this.createdAt = content.getCreatedAt();
-        this.author = new AdminContentAuthorResponse(content.getUser());
     }
 }
