@@ -1,0 +1,53 @@
+# 05 Draft Dev Reward Admin CRUD API
+
+파일명:
+- 05-draft-dev-reward-admin-crud-api.md
+
+다음 공통 규칙을 따른다.
+- `prompts/common-rules.md`
+- `prompts/modes/development.md`
+
+작업 목표:
+- 관리자용 추첨 상품(Reward) CRUD API를 추가한다.
+- 관리자 권한 확인을 위해 토큰 기반으로 현재 사용자를 식별하고, 해당 상품이 속한 컨텐츠(Content)의 소유권(User)을 검증한다.
+
+배경:
+- 이 프로젝트는 Supabase JWT를 사용하여 사용자를 인증한다.
+- 현재 `CurrentUserService`를 통해 로그인한 사용자 정보를 가져올 수 있다.
+- `Reward`는 `Content`에 속하며, `Content`는 `User`에 속한다.
+- 관리자는 본인이 소유한 컨텐츠의 상품만 관리할 수 있어야 한다.
+
+포함 범위:
+- `AdminRewardController`: `/api/admin/rewards` 엔드포인트 구현
+  - `GET /api/admin/rewards?contentId={contentId}`: 특정 컨텐츠의 모든 상품 목록 조회
+  - `GET /api/admin/rewards/{rewardId}`: 특정 상품 상세 조회
+  - `POST /api/admin/rewards`: 새 상품 생성 (body에 `contentId` 포함)
+  - `PUT /api/admin/rewards/{rewardId}`: 상품 정보 수정
+  - `DELETE /api/admin/rewards/{rewardId}`: 상품 삭제 (또는 `active=false` 처리)
+- `RewardService` (또는 `RewardAdminService` 분리): CRUD 로직 및 컨텐츠 소유권 검증 로직 추가
+- `RewardCreateRequest`, `RewardUpdateRequest` DTO 추가
+- `ContentRepository`: `Content` 엔티티 조회를 위해 추가 (기존에 없다면 새로 생성)
+- `RewardRepository`: 관리자용 조회 메서드 추가 (필요 시)
+- `ErrorCode`: `FORBIDDEN_CONTENT_ACCESS` 등 소유권 관련 에러 코드 추가
+
+제외 범위:
+- 상품 이외의 CRUD (Content, User 등)
+- 프론트엔드 작업
+
+제약:
+- 모든 파일은 UTF-8로 저장한다.
+- 기존 계층 구조(Controller-Service-Repository)와 네이밍 규칙을 따른다.
+- `/api/admin/contents`를 참고하여 일관된 URL 구조와 보안 처리를 유지한다.
+- 소유권 검증 실패 시 적절한 예외(예: 403 Forbidden)를 발생시킨다.
+- 모든 응답은 `ApiResponse` 공통 형식을 사용하여 응답한다.
+
+명명 규칙:
+- 관리자용 컨트롤러: `AdminRewardController`
+- 요청 DTO: `RewardCreateRequest`, `RewardUpdateRequest`
+- 서비스 메서드: `getRewardsByContent`, `createReward`, `updateReward`, `deleteReward` 등
+
+완료 조건:
+- 본인 소유 컨텐츠의 상품에 대해서만 CRUD가 정상 동작함을 확인한다.
+- 타인 소유 컨텐츠의 상품에 접근 시 차단됨을 확인한다.
+- API 응답이 `ApiResponse` 공통 형식을 따르는지 확인한다.
+- Swagger에 관리자 API가 정상적으로 노출되는지 확인한다.
