@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RewardCreateRequest {
 
-    @NotNull(message = "콘텐츠 ID를 입력해 주세요.")
-    private Long contentId;
+    @NotBlank(message = "콘텐츠 코드를 입력해 주세요.")
+    private String contentCode;
 
     @NotBlank(message = "보상 이름을 입력해 주세요.")
     @Size(max = 200, message = "보상 이름은 200자 이하여야 합니다.")
@@ -29,7 +29,7 @@ public class RewardCreateRequest {
     private Integer stock;
 
     @Size(max = 500, message = "이미지url는 500자 이하여야 합니다.")
-    private String image;
+    private String imageUrl;
 
     private Boolean allowDuplicateReward;
 }

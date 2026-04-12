@@ -24,8 +24,8 @@ public class RewardAdminService {
     private final CurrentUserService currentUserService;
 
     @Transactional(readOnly = true)
-    public List<AdminRewardResponse> getRewardsByContent(Long contentId) {
-        Content content = getOwnedContent(contentId);
+    public List<AdminRewardResponse> getRewardsByContent(String contentCode) {
+        Content content = getOwnedContent(contentCode);
         return rewardRepository.findAllByContentId(content.getId())
                 .stream()
                 .map(AdminRewardResponse::new)
@@ -39,13 +39,13 @@ public class RewardAdminService {
 
     @Transactional
     public AdminRewardResponse createReward(RewardCreateRequest request) {
-        Content content = getOwnedContent(request.getContentId());
+        Content content = getOwnedContent(request.getContentCode());
         Reward reward = new Reward(
                 request.getName(),
                 request.getDescription(),
                 request.getWeight(),
                 request.getStock(),
-                request.getImage(),
+                request.getImageUrl(),
                 request.getAllowDuplicateReward(),
                 content
         );
@@ -72,9 +72,9 @@ public class RewardAdminService {
         reward.delete();
     }
 
-    private Content getOwnedContent(Long contentId) {
+    private Content getOwnedContent(String contentCode) {
         Long currentUserId = currentUserService.getCurrentUserEntity().getId();
-        return contentRepository.findByIdWithUser(contentId)
+        return contentRepository.findByCodeWithUser(contentCode)
                 .map(content -> {
                     if (content.isDeleted()) {
                         throw new DrawEventException(ErrorCode.CONTENT_NOT_FOUND);

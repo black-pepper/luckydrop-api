@@ -9,7 +9,7 @@ import java.time.OffsetDateTime;
 public class AdminRewardResponse {
 
     private final Long id;
-    private final Long contentId;
+    private final String contentCode;
     private final String name;
     private final String description;
     private final int weight;
@@ -23,7 +23,7 @@ public class AdminRewardResponse {
 
     public AdminRewardResponse(Reward reward) {
         this.id = reward.getId();
-        this.contentId = reward.getContent().getId();
+        this.contentCode = reward.getContent().getCode();
         this.name = reward.getName();
         this.description = reward.getDescription();
         this.weight = reward.getWeight();

@@ -7,7 +7,7 @@ import com.luckydrop.api.domain.reward.dto.RewardUpdateRequest;
 import com.luckydrop.api.service.RewardAdminService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -34,8 +34,8 @@ public class AdminRewardController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<AdminRewardResponse>>> getRewardsByContent(
-            @RequestParam @NotNull Long contentId) {
-        return ResponseEntity.ok(ApiResponse.ok(rewardAdminService.getRewardsByContent(contentId)));
+            @RequestParam @NotBlank String contentCode) {
+        return ResponseEntity.ok(ApiResponse.ok(rewardAdminService.getRewardsByContent(contentCode)));
     }
 
     @GetMapping("/{rewardId}")

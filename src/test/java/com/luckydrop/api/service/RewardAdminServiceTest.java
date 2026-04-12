@@ -48,13 +48,14 @@ class RewardAdminServiceTest {
         Reward reward = createReward(100L, content, true);
 
         when(currentUserService.getCurrentUserEntity()).thenReturn(currentUser);
-        when(contentRepository.findByIdWithUser(10L)).thenReturn(Optional.of(content));
+        when(contentRepository.findByCodeWithUser("CONTENT-001")).thenReturn(Optional.of(content));
         when(rewardRepository.findAllByContentId(10L)).thenReturn(List.of(reward));
 
-        List<AdminRewardResponse> responses = rewardAdminService.getRewardsByContent(10L);
+        List<AdminRewardResponse> responses = rewardAdminService.getRewardsByContent("CONTENT-001");
 
         assertThat(responses).hasSize(1);
         assertThat(responses.getFirst().getId()).isEqualTo(100L);
+        assertThat(responses.getFirst().getContentCode()).isEqualTo("CONTENT-001");
         assertThat(responses.getFirst().isActive()).isTrue();
     }
 
@@ -79,7 +80,7 @@ class RewardAdminServiceTest {
         User currentUser = createUser(1L);
         Content content = createContent(10L, currentUser, false);
         RewardCreateRequest request = new RewardCreateRequest();
-        ReflectionTestUtils.setField(request, "contentId", 10L);
+        ReflectionTestUtils.setField(request, "contentCode", "CONTENT-001");
         ReflectionTestUtils.setField(request, "name", "1등 경품");
         ReflectionTestUtils.setField(request, "description", "최고 보상");
         ReflectionTestUtils.setField(request, "weight", 10);
@@ -88,7 +89,7 @@ class RewardAdminServiceTest {
         ReflectionTestUtils.setField(request, "allowDuplicateReward", true);
 
         when(currentUserService.getCurrentUserEntity()).thenReturn(currentUser);
-        when(contentRepository.findByIdWithUser(10L)).thenReturn(Optional.of(content));
+        when(contentRepository.findByCodeWithUser("CONTENT-001")).thenReturn(Optional.of(content));
         when(rewardRepository.save(any(Reward.class))).thenAnswer(invocation -> {
             Reward savedReward = invocation.getArgument(0);
             ReflectionTestUtils.setField(savedReward, "id", 100L);
@@ -100,7 +101,7 @@ class RewardAdminServiceTest {
         AdminRewardResponse response = rewardAdminService.createReward(request);
 
         assertThat(response.getId()).isEqualTo(100L);
-        assertThat(response.getContentId()).isEqualTo(10L);
+        assertThat(response.getContentCode()).isEqualTo("CONTENT-001");
         assertThat(response.getName()).isEqualTo("1등 경품");
         assertThat(response.isAllowDuplicateReward()).isTrue();
     }
