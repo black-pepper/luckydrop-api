@@ -1,4 +1,4 @@
-package com.luckydrop.api.domain.drawcode.entity;
+package com.luckydrop.api.domain.invitationcode.entity;
 
 import com.luckydrop.api.domain.content.entity.Content;
 import jakarta.persistence.Column;
@@ -25,7 +25,7 @@ import java.time.OffsetDateTime;
 )
 @Getter
 @NoArgsConstructor
-public class DrawCode {
+public class InvitationCode {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,6 +63,27 @@ public class DrawCode {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
+
+    public InvitationCode(String code, String name, Content content, int allowedDrawCount, OffsetDateTime expiresAt) {
+        this.code = code;
+        this.name = name;
+        this.content = content;
+        this.allowedDrawCount = allowedDrawCount;
+        this.expiresAt = expiresAt;
+        this.active = true;
+        this.usedDrawCount = 0;
+    }
+
+    public void update(String name, int allowedDrawCount, OffsetDateTime expiresAt, boolean active) {
+        this.name = name;
+        this.allowedDrawCount = allowedDrawCount;
+        this.expiresAt = expiresAt;
+        this.active = active;
+    }
+
+    public void delete() {
+        this.active = false;
+    }
 
     public boolean isExpired() {
         return expiresAt != null && OffsetDateTime.now().isAfter(expiresAt);

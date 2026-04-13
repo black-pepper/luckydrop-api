@@ -14,14 +14,14 @@ public interface DrawResultRepository extends JpaRepository<DrawResult, Long> {
         SELECT dr
         FROM DrawResult dr
         JOIN FETCH dr.reward
-        WHERE dr.drawCode.id = :drawCodeId
+        WHERE dr.invitationCode.id = :drawCodeId
         ORDER BY dr.drawnAt DESC
         """)
     List<DrawResult> findByDrawCodeIdOrderByDrawnAtDesc(@Param("drawCodeId") Long drawCodeId);
 
-    @Query("SELECT COALESCE(MAX(dr.drawNo), 0) + 1 FROM DrawResult dr WHERE dr.drawCode.id = :drawCodeId")
+    @Query("SELECT COALESCE(MAX(dr.drawNo), 0) + 1 FROM DrawResult dr WHERE dr.invitationCode.id = :drawCodeId")
     int findNextDrawNo(@Param("drawCodeId") Long drawCodeId);
 
-    @Query("SELECT DISTINCT dr.reward.id FROM DrawResult dr WHERE dr.drawCode.id = :drawCodeId")
+    @Query("SELECT DISTINCT dr.reward.id FROM DrawResult dr WHERE dr.invitationCode.id = :drawCodeId")
     Set<Long> findRewardIdsByDrawCodeId(@Param("drawCodeId") Long drawCodeId);
 }

@@ -1,7 +1,7 @@
 package com.luckydrop.api.domain.drawresult.entity;
 
 import com.luckydrop.api.domain.content.entity.Content;
-import com.luckydrop.api.domain.drawcode.entity.DrawCode;
+import com.luckydrop.api.domain.invitationcode.entity.InvitationCode;
 import com.luckydrop.api.domain.reward.entity.Reward;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,7 +30,7 @@ public class DrawResult {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invitation_code_id", nullable = false)
-    private DrawCode drawCode;
+    private InvitationCode invitationCode;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "content_id", nullable = false)
@@ -47,8 +47,8 @@ public class DrawResult {
     private OffsetDateTime drawnAt;
 
     @Builder
-    public DrawResult(DrawCode drawCode, Content content, Reward reward, int drawNo) {
-        this.drawCode = drawCode;
+    public DrawResult(InvitationCode invitationCode, Content content, Reward reward, int drawNo) {
+        this.invitationCode = invitationCode;
         this.content = content;
         this.reward = reward;
         this.drawNo = drawNo;
