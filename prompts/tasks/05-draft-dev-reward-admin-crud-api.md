@@ -20,12 +20,12 @@
 - `contentId`는 내부 식별자 또는 디버깅 용도로만 사용하고, API 요청/응답과 URL/쿼리 파라미터에는 `contentCode`를 사용한다.
 
 포함 범위:
-- `AdminRewardController`: `/api/admin/rewards` 엔드포인트 구현
-  - `GET /api/admin/rewards?contentCode={contentCode}`: 특정 컨텐츠의 모든 상품 목록 조회
-  - `GET /api/admin/rewards/{rewardId}`: 특정 상품 상세 조회
-  - `POST /api/admin/rewards`: 새 상품 생성, body에 `contentCode` 포함
-  - `PUT /api/admin/rewards/{rewardId}`: 상품 정보 수정
-  - `DELETE /api/admin/rewards/{rewardId}`: 상품 삭제 또는 `active=false` 처리
+- `AdminRewardController`: `/api/manage/rewards` 엔드포인트 구현
+  - `GET /api/manage/rewards?contentCode={contentCode}`: 특정 컨텐츠의 모든 상품 목록 조회
+  - `GET /api/manage/rewards/{rewardId}`: 특정 상품 상세 조회
+  - `POST /api/manage/rewards`: 새 상품 생성, body에 `contentCode` 포함
+  - `PUT /api/manage/rewards/{rewardId}`: 상품 정보 수정
+  - `DELETE /api/manage/rewards/{rewardId}`: 상품 삭제 또는 `active=false` 처리
 - `RewardService` 또는 `RewardAdminService`: CRUD 로직 및 컨텐츠 소유권 검증 로직 추가
 - `RewardCreateRequest`, `RewardUpdateRequest` DTO 추가 또는 수정
 - `ContentRepository`: `contentCode`로 `Content` 조회
@@ -39,7 +39,7 @@
 제약:
 - 모든 파일은 UTF-8로 저장한다.
 - 기존 계층 구조(Controller-Service-Repository)와 네이밍 규칙을 따른다.
-- `/api/admin/contents`를 참고하여 유사한 URL 구조와 보안 처리를 유지한다.
+- `/api/manage/contents`를 참고하여 유사한 URL 구조와 보안 처리를 유지한다.
 - 소유권 검증 실패 시 명확한 예외(예: 403 Forbidden)를 반환한다.
 - 모든 응답은 `ApiResponse` 공통 형식을 사용한다.
 - 외부 API 스펙에는 `contentId`를 노출하지 않는다.

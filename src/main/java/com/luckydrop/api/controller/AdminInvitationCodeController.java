@@ -25,7 +25,7 @@ import java.util.List;
 
 @Validated
 @RestController
-@RequestMapping("/api/admin/invitation-codes")
+@RequestMapping("/api/manage/invitation-codes")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
 public class AdminInvitationCodeController {

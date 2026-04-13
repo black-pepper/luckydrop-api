@@ -17,12 +17,12 @@
 - 초대 코드는 특정 컨텐츠 내에서 유일해야 하며(`unique(content_id, code)`), 허용 횟수와 만료일 설정을 포함한다.
 
 포함 범위:
-- `AdminDrawCodeController`: `/api/admin/draw-codes` 엔드포인트 구현
-  - `GET /api/admin/draw-codes?contentId={contentId}`: 특정 컨텐츠의 모든 초대 코드 목록 조회
-  - `GET /api/admin/draw-codes/{drawCodeId}`: 특정 초대 코드 상세 조회
-  - `POST /api/admin/draw-codes`: 새 초대 코드 생성 (body에 `contentId`, `code`, `allowedDrawCount`, `expiresAt` 등 포함)
-  - `PUT /api/admin/draw-codes/{drawCodeId}`: 초대 코드 정보 수정 (이름, 허용 횟수, 만료일, 활성화 여부 등)
-  - `DELETE /api/admin/draw-codes/{drawCodeId}`: 초대 코드 삭제 (또는 `active=false` 처리)
+- `AdminInvitationCodeController`: `/api/manage/invitation-codes` 엔드포인트 구현
+  - `GET /api/manage/invitation-codes?contentCode={contentCode}`: 특정 컨텐츠의 모든 초대 코드 목록 조회
+  - `GET /api/manage/invitation-codes/{invitationCodeId}`: 특정 초대 코드 상세 조회
+  - `POST /api/manage/invitation-codes`: 새 초대 코드 생성 (body에 `contentCode`, `code`, `allowedDrawCount`, `expiresAt` 등 포함)
+  - `PUT /api/manage/invitation-codes/{invitationCodeId}`: 초대 코드 정보 수정 (이름, 허용 횟수, 만료일, 활성화 여부 등)
+  - `DELETE /api/manage/invitation-codes/{invitationCodeId}`: 초대 코드 삭제 (또는 `active=false` 처리)
 - `DrawCodeService` (또는 `DrawCodeAdminService` 분리): CRUD 및 소유권 검증 로직 구현
 - `DrawCodeCreateRequest`, `DrawCodeUpdateRequest`, `DrawCodeResponse` DTO 추가
 - `DrawCodeRepository`: `findByContentId` 등 관리자 조회용 메서드 추가
@@ -34,12 +34,12 @@
 제약:
 - 모든 파일은 UTF-8로 저장한다.
 - 기존 계층 구조와 엔티티 네이밍(`DrawCode`)을 따른다.
-- `/api/admin/contents`를 참고하여 일관된 URL 구조와 보안 처리를 유지한다.
+- `/api/manage/contents`를 참고하여 일관된 URL 구조와 보안 처리를 유지한다.
 - 소유권 검증 실패 시 적절한 예외(403 Forbidden)를 발생시킨다.
 - 모든 응답은 `ApiResponse` 공통 형식을 사용한다.
 
 명명 규칙:
-- 관리자용 컨트롤러: `AdminDrawCodeController`
+- 관리자용 컨트롤러: `AdminInvitationCodeController`
 - 요청/응답 DTO: `DrawCodeCreateRequest`, `DrawCodeUpdateRequest`, `DrawCodeResponse`
 - 서비스 메서드: `getDrawCodesByContent`, `createDrawCode`, `updateDrawCode`, `deleteDrawCode`
 

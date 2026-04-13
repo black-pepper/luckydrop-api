@@ -25,7 +25,7 @@ import java.util.List;
 
 @Validated
 @RestController
-@RequestMapping("/api/admin/rewards")
+@RequestMapping("/api/manage/rewards")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
 public class AdminRewardController {

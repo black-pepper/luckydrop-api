@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/contents")
+@RequestMapping("/api/manage/contents")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
 public class AdminContentController {
