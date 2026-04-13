@@ -12,6 +12,9 @@ app:
     cors:
       allowed-origins:
         - ${APP_CORS_ALLOWED_ORIGIN:https://luckydrop-dev.pages.dev}
+        - https://zany-barnacle-pwp7vgv4q452qpv-8080.app.github.dev
+        - http://localhost:8080
+        - http://localhost:8081
     jwt:
       issuer-uri: ${SUPABASE_ISSUER_URI}
       jwk-set-uri: ${SUPABASE_JWK_SET_URI:${SUPABASE_ISSUER_URI}/.well-known/jwks.json}
