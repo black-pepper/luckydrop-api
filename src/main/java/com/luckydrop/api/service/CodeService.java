@@ -2,9 +2,9 @@ package com.luckydrop.api.service;
 
 import com.luckydrop.api.common.exception.DrawEventException;
 import com.luckydrop.api.common.exception.ErrorCode;
-import com.luckydrop.api.domain.drawcode.dto.CodeVerifyResponse;
-import com.luckydrop.api.domain.drawcode.entity.DrawCode;
-import com.luckydrop.api.domain.drawcode.repository.DrawCodeRepository;
+import com.luckydrop.api.domain.invitationcode.dto.CodeVerifyResponse;
+import com.luckydrop.api.domain.invitationcode.entity.InvitationCode;
+import com.luckydrop.api.domain.invitationcode.repository.InvitationCodeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,20 +13,20 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CodeService {
 
-    private final DrawCodeRepository drawCodeRepository;
+    private final InvitationCodeRepository invitationCodeRepository;
 
     @Transactional(readOnly = true)
     public CodeVerifyResponse verifyCode(String contentCode, String invitationCode) {
-        DrawCode drawCode = drawCodeRepository.findByContentCodeAndCodeWithContent(contentCode, invitationCode)
+        InvitationCode code = invitationCodeRepository.findByContentCodeAndCodeWithContent(contentCode, invitationCode)
                 .orElseThrow(() -> new DrawEventException(ErrorCode.CODE_NOT_FOUND));
 
-        if (!drawCode.isActive()) {
+        if (!code.isActive()) {
             throw new DrawEventException(ErrorCode.CODE_INACTIVE);
         }
-        if (drawCode.isExpired()) {
+        if (code.isExpired()) {
             throw new DrawEventException(ErrorCode.CODE_EXPIRED);
         }
 
-        return new CodeVerifyResponse(drawCode);
+        return new CodeVerifyResponse(code);
     }
 }

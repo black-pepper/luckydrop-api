@@ -3,8 +3,8 @@ package com.luckydrop.api.service;
 import com.luckydrop.api.common.exception.DrawEventException;
 import com.luckydrop.api.common.exception.ErrorCode;
 import com.luckydrop.api.domain.content.entity.Content;
-import com.luckydrop.api.domain.drawcode.entity.DrawCode;
-import com.luckydrop.api.domain.drawcode.repository.DrawCodeRepository;
+import com.luckydrop.api.domain.invitationcode.entity.InvitationCode;
+import com.luckydrop.api.domain.invitationcode.repository.InvitationCodeRepository;
 import com.luckydrop.api.domain.drawresult.dto.DrawRequest;
 import com.luckydrop.api.domain.drawresult.dto.DrawResponse;
 import com.luckydrop.api.domain.drawresult.entity.DrawResult;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 class DrawServiceTest {
 
     @Mock
-    private DrawCodeRepository drawCodeRepository;
+    private InvitationCodeRepository invitationCodeRepository;
 
     @Mock
     private RewardRepository rewardRepository;
@@ -49,11 +49,11 @@ class DrawServiceTest {
     void drawSucceedsWhenContentCodeAndInvitationCodeMatch() {
         DrawRequest request = createDrawRequest("CONTENT-001", "INVITE-001");
         Content content = createContent("CONTENT-001");
-        DrawCode drawCode = createDrawCode("INVITE-001", content);
+        InvitationCode invitationCode = createInvitationCode("INVITE-001", content);
         Reward reward = createReward(content);
 
-        when(drawCodeRepository.findByContentCodeAndCodeWithLock("CONTENT-001", "INVITE-001"))
-                .thenReturn(Optional.of(drawCode));
+        when(invitationCodeRepository.findByContentCodeAndCodeWithLock("CONTENT-001", "INVITE-001"))
+                .thenReturn(Optional.of(invitationCode));
         when(drawResultRepository.findRewardIdsByDrawCodeId(1L)).thenReturn(Set.of());
         when(rewardRepository.findAllAvailableByContentIdWithLock(10L)).thenReturn(List.of(reward));
         when(drawResultRepository.findNextDrawNo(1L)).thenReturn(1);
@@ -72,7 +72,7 @@ class DrawServiceTest {
     @Test
     void drawThrowsWhenInvitationCodeDoesNotBelongToContent() {
         DrawRequest request = createDrawRequest("CONTENT-001", "INVITE-002");
-        when(drawCodeRepository.findByContentCodeAndCodeWithLock("CONTENT-001", "INVITE-002"))
+        when(invitationCodeRepository.findByContentCodeAndCodeWithLock("CONTENT-001", "INVITE-002"))
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> drawService.draw(request))
@@ -95,15 +95,15 @@ class DrawServiceTest {
         return content;
     }
 
-    private DrawCode createDrawCode(String code, Content content) {
-        DrawCode drawCode = new DrawCode();
-        ReflectionTestUtils.setField(drawCode, "id", 1L);
-        ReflectionTestUtils.setField(drawCode, "code", code);
-        ReflectionTestUtils.setField(drawCode, "content", content);
-        ReflectionTestUtils.setField(drawCode, "allowedDrawCount", 3);
-        ReflectionTestUtils.setField(drawCode, "usedDrawCount", 0);
-        ReflectionTestUtils.setField(drawCode, "active", true);
-        return drawCode;
+    private InvitationCode createInvitationCode(String code, Content content) {
+        InvitationCode invitationCode = new InvitationCode();
+        ReflectionTestUtils.setField(invitationCode, "id", 1L);
+        ReflectionTestUtils.setField(invitationCode, "code", code);
+        ReflectionTestUtils.setField(invitationCode, "content", content);
+        ReflectionTestUtils.setField(invitationCode, "allowedDrawCount", 3);
+        ReflectionTestUtils.setField(invitationCode, "usedDrawCount", 0);
+        ReflectionTestUtils.setField(invitationCode, "active", true);
+        return invitationCode;
     }
 
     private Reward createReward(Content content) {

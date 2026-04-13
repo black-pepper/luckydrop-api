@@ -17,6 +17,8 @@ public enum ErrorCode {
     CODE_EXPIRED(HttpStatus.BAD_REQUEST, "만료된 코드입니다."),
     CODE_NO_REMAINING(HttpStatus.BAD_REQUEST, "남은 횟수가 없습니다."),
     PARTICIPANT_INACTIVE(HttpStatus.BAD_REQUEST, "비활성화된 사용자입니다."),
+    DRAW_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 초대 코드입니다."),
+    DRAW_CODE_DUPLICATE(HttpStatus.CONFLICT, "이미 존재하는 초대 코드입니다."),
     REWARD_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 보상입니다."),
     NO_AVAILABLE_REWARD(HttpStatus.INTERNAL_SERVER_ERROR, "추첨 가능한 보상이 없습니다."),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.");

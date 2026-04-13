@@ -2,7 +2,7 @@ package com.luckydrop.api.controller;
 
 import com.luckydrop.api.common.response.ApiResponse;
 import com.luckydrop.api.domain.content.dto.ParticipantContentDetailResponse;
-import com.luckydrop.api.domain.drawcode.dto.CodeVerifyResponse;
+import com.luckydrop.api.domain.invitationcode.dto.CodeVerifyResponse;
 import com.luckydrop.api.domain.drawresult.dto.DrawRequest;
 import com.luckydrop.api.domain.drawresult.dto.DrawResponse;
 import com.luckydrop.api.domain.drawresult.dto.DrawResultResponse;

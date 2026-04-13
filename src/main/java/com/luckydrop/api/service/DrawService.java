@@ -2,8 +2,8 @@ package com.luckydrop.api.service;
 
 import com.luckydrop.api.common.exception.DrawEventException;
 import com.luckydrop.api.common.exception.ErrorCode;
-import com.luckydrop.api.domain.drawcode.entity.DrawCode;
-import com.luckydrop.api.domain.drawcode.repository.DrawCodeRepository;
+import com.luckydrop.api.domain.invitationcode.entity.InvitationCode;
+import com.luckydrop.api.domain.invitationcode.repository.InvitationCodeRepository;
 import com.luckydrop.api.domain.drawresult.dto.DrawRequest;
 import com.luckydrop.api.domain.drawresult.dto.DrawResponse;
 import com.luckydrop.api.domain.drawresult.entity.DrawResult;
@@ -24,23 +24,23 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class DrawService {
 
-    private final DrawCodeRepository drawCodeRepository;
+    private final InvitationCodeRepository invitationCodeRepository;
     private final RewardRepository rewardRepository;
     private final DrawResultRepository drawResultRepository;
     private final Random random = new Random();
 
     @Transactional
     public DrawResponse draw(DrawRequest request) {
-        DrawCode drawCode = drawCodeRepository.findByContentCodeAndCodeWithLock(
+        InvitationCode invitationCode = invitationCodeRepository.findByContentCodeAndCodeWithLock(
                         request.getContentCode(),
                         request.getInvitationCode()
                 )
                 .orElseThrow(() -> new DrawEventException(ErrorCode.CODE_NOT_FOUND));
 
-        validateDrawCode(drawCode);
+        validateInvitationCode(invitationCode);
 
-        Set<Long> drawnRewardIds = drawResultRepository.findRewardIdsByDrawCodeId(drawCode.getId());
-        List<Reward> availableRewards = rewardRepository.findAllAvailableByContentIdWithLock(drawCode.getContent().getId())
+        Set<Long> drawnRewardIds = drawResultRepository.findRewardIdsByDrawCodeId(invitationCode.getId());
+        List<Reward> availableRewards = rewardRepository.findAllAvailableByContentIdWithLock(invitationCode.getContent().getId())
                 .stream()
                 .filter(reward -> reward.isDuplicateAllowed() || !drawnRewardIds.contains(reward.getId()))
                 .toList();
@@ -52,17 +52,17 @@ public class DrawService {
         Reward selectedReward = selectRewardByWeight(availableRewards);
         selectedReward.decreaseStock();
 
-        int drawNo = drawResultRepository.findNextDrawNo(drawCode.getId());
+        int drawNo = drawResultRepository.findNextDrawNo(invitationCode.getId());
 
         DrawResult result = DrawResult.builder()
-                .drawCode(drawCode)
-                .content(drawCode.getContent())
+                .invitationCode(invitationCode)
+                .content(invitationCode.getContent())
                 .reward(selectedReward)
                 .drawNo(drawNo)
                 .build();
         drawResultRepository.save(result);
 
-        drawCode.use();
+        invitationCode.use();
 
         log.info(
                 "Draw completed - contentCode: {}, invitationCode: {}, reward: {}, drawNo: {}",
@@ -72,7 +72,7 @@ public class DrawService {
                 drawNo
         );
 
-        return new DrawResponse(result, drawCode.getRemainingCount());
+        return new DrawResponse(result, invitationCode.getRemainingCount());
     }
 
     private Reward selectRewardByWeight(List<Reward> rewards) {
@@ -88,17 +88,17 @@ public class DrawService {
         return rewards.get(rewards.size() - 1);
     }
 
-    private void validateDrawCode(DrawCode drawCode) {
-        if (!drawCode.isActive()) {
+    private void validateInvitationCode(InvitationCode invitationCode) {
+        if (!invitationCode.isActive()) {
             throw new DrawEventException(ErrorCode.CODE_INACTIVE);
         }
-        if (drawCode.isExpired()) {
+        if (invitationCode.isExpired()) {
             throw new DrawEventException(ErrorCode.CODE_EXPIRED);
         }
-        if (drawCode.getContent().isDeleted()) {
+        if (invitationCode.getContent().isDeleted()) {
             throw new DrawEventException(ErrorCode.CODE_INACTIVE);
         }
-        if (drawCode.hasNoRemaining()) {
+        if (invitationCode.hasNoRemaining()) {
             throw new DrawEventException(ErrorCode.CODE_NO_REMAINING);
         }
     }

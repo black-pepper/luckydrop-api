@@ -79,13 +79,13 @@
 - 프롬프트와 코드에서 `content`, `admin`, `deleted`, `code` 용어를 혼용하지 않고 일관되게 사용한다.
 
 구현 지침:
-- 관리자 API는 `/api/admin/contents` 계열 경로를 우선 검토한다.
-- 최소한 아래 기능을 제공한다.
-- `POST /api/admin/contents`: 콘텐츠 생성
-- `GET /api/admin/contents/{contentCode}`: 콘텐츠 상세 조회
-- `GET /api/admin/contents`: 사용자 생성 콘텐츠 목록 전체 조회
-- `PUT` 또는 `PATCH /api/admin/contents/{contentCode}`: 콘텐츠 수정
-- `DELETE /api/admin/contents/{contentCode}`: 콘텐츠 삭제
+- 관리자 API는 `/api/manage/contents` 계열 경로를 우선 검토한다.
+
+- `POST /api/manage/contents`: 콘텐츠 생성
+- `GET /api/manage/contents/{contentCode}`: 콘텐츠 상세 조회
+- `GET /api/manage/contents`: 사용자 생성 콘텐츠 목록 전체 조회
+- `PUT` 또는 `PATCH /api/manage/contents/{contentCode}`: 콘텐츠 수정
+- `DELETE /api/manage/contents/{contentCode}`: 콘텐츠 삭제
 - `Content.type`은 현재 스키마의 허용값(`DRAW`, `QUIZ`) 범위를 벗어나지 않도록 검증한다.
 - 생성/수정 시 `title`, `description`, `type`, `userId` 중 어떤 값이 필수인지 현재 도메인 문맥에 맞게 명확히 정한다.
 - 콘텐츠 외부 식별자는 생성 시 자동으로 부여되는 `code`를 사용한다.

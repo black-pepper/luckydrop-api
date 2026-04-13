@@ -17,7 +17,7 @@
 ## 3. Background
 - 현재 `DrawController`의 `/api/draw/execute`는 `DrawRequest.code` 하나만 받아 추첨을 수행한다.
 - 현재 추첨 로직은 `DrawCodeRepository.findByCodeWithLock()` 기준으로 invitation code만 조회한 뒤 해당 코드에 연결된 콘텐츠로 보상과 결과를 처리한다.
-- 현재 콘텐츠 상세 조회는 관리자 전용 `AdminContentController`의 `/api/admin/contents/{contentCode}`만 존재하며, 참가자용 공개 조회 API는 없다.
+- 현재 콘텐츠 상세 조회는 관리자 전용 `AdminContentController`의 `/api/manage/contents/{contentCode}`만 존재하며, 참가자용 공개 조회 API는 없다.
 - 관련 주요 파일:
   - `src/main/java/com/luckydrop/api/controller/DrawController.java`
   - `src/main/java/com/luckydrop/api/domain/drawresult/dto/DrawRequest.java`
@@ -105,7 +105,7 @@
 
 배경:
 - 현재 `/api/draw/execute`는 `DrawRequest.code` 하나만 받아 invitation code 기준으로 추첨을 수행한다.
-- 현재 콘텐츠 상세 조회는 관리자 전용 `/api/admin/contents/{contentCode}`만 존재한다.
+- 현재 콘텐츠 상세 조회는 관리자 전용 `/api/manage/contents/{contentCode}`만 존재한다.
 - 이번 작업에서는 참가자 흐름에서 content와 invitation code를 분리해 다루도록 API를 명확히 바꿔야 한다.
 
 포함 범위:
