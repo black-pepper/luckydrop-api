@@ -8,8 +8,28 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface RewardRepository extends JpaRepository<Reward, Long> {
+
+    @Query("""
+        SELECT r
+        FROM Reward r
+        JOIN FETCH r.content c
+        LEFT JOIN FETCH c.user
+        WHERE r.id = :rewardId
+        """)
+    Optional<Reward> findByIdWithContentAndUser(@Param("rewardId") Long rewardId);
+
+    @Query("""
+        SELECT r
+        FROM Reward r
+        JOIN FETCH r.content c
+        LEFT JOIN FETCH c.user
+        WHERE c.id = :contentId
+        ORDER BY r.createdAt DESC, r.id DESC
+        """)
+    List<Reward> findAllByContentId(@Param("contentId") Long contentId);
 
     @Query("""
         SELECT r

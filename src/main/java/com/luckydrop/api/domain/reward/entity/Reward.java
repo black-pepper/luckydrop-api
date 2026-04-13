@@ -46,7 +46,7 @@ public class Reward {
     private boolean active = true;
 
     @Column(name = "allow_duplicate_reward")
-    private Boolean allowDuplicateReward;
+    private Boolean allowDuplicateReward = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "content_id", nullable = false)
@@ -60,12 +60,55 @@ public class Reward {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
+    public Reward(
+            String name,
+            String description,
+            int weight,
+            Integer stock,
+            String image,
+            Boolean allowDuplicateReward,
+            Content content
+    ) {
+        this.name = name;
+        this.description = description;
+        this.weight = weight;
+        this.stock = stock;
+        this.image = image;
+        this.active = true;
+        this.allowDuplicateReward = allowDuplicateReward != null ? allowDuplicateReward : true;
+        this.content = content;
+    }
+
     public boolean isUnlimitedStock() {
         return this.stock == null;
     }
 
+    public boolean isActive() {
+        return active;
+    }
+
     public boolean isDuplicateAllowed() {
         return Boolean.TRUE.equals(this.allowDuplicateReward);
+    }
+
+    public void update(
+            String name,
+            String description,
+            int weight,
+            Integer stock,
+            String image,
+            Boolean allowDuplicateReward
+    ) {
+        this.name = name;
+        this.description = description;
+        this.weight = weight;
+        this.stock = stock;
+        this.image = image;
+        this.allowDuplicateReward = allowDuplicateReward != null ? allowDuplicateReward : true;
+    }
+
+    public void delete() {
+        this.active = false;
     }
 
     public void decreaseStock() {

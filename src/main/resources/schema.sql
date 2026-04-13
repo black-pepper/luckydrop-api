@@ -52,7 +52,7 @@ create table public.rewards (
   is_active boolean not null default true,
   created_at timestamp with time zone not null default now(),
   updated_at timestamp with time zone not null default now(),
-  allow_duplicate_reward boolean null,
+  allow_duplicate_reward boolean null default true,
   content_id bigint not null,
   constraint rewards_pkey primary key (id),
   constraint rewards_content_id_fkey foreign key (content_id) references public.contents (id),
