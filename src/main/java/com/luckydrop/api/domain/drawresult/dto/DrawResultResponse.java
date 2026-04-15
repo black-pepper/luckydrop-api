@@ -13,6 +13,7 @@ public class DrawResultResponse {
     private final String rewardImageUrl;
     private final int drawNo;
     private final OffsetDateTime drawnAt;
+    private final boolean delivered;
 
     public DrawResultResponse(DrawResult result) {
         this.drawResultId = result.getId();
@@ -20,5 +21,6 @@ public class DrawResultResponse {
         this.rewardImageUrl = result.getReward().getImage();
         this.drawNo = result.getDrawNo();
         this.drawnAt = result.getDrawnAt();
+        this.delivered = result.isDelivered();
     }
 }
