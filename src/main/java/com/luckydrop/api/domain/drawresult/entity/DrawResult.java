@@ -46,6 +46,9 @@ public class DrawResult {
     @Column(name = "drawn_at", nullable = false)
     private OffsetDateTime drawnAt;
 
+    @Column(name = "delivered", nullable = false)
+    private boolean delivered = false;
+
     @Builder
     public DrawResult(InvitationCode invitationCode, Content content, Reward reward, int drawNo) {
         this.invitationCode = invitationCode;
@@ -53,5 +56,10 @@ public class DrawResult {
         this.reward = reward;
         this.drawNo = drawNo;
         this.drawnAt = OffsetDateTime.now();
+        this.delivered = false;
+    }
+
+    public void updateDelivered(boolean delivered) {
+        this.delivered = delivered;
     }
 }

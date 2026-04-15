@@ -67,6 +67,7 @@ create table public.draw_results (
   content_id bigint not null,
   draw_no integer not null,
   drawn_at timestamp with time zone not null default now(),
+  delivered boolean not null default false,
   constraint draw_results_pkey primary key (id),
   constraint draw_results_invitation_code_id_draw_no_key unique (invitation_code_id, draw_no),
   constraint draw_results_content_id_fkey foreign key (content_id) references public.contents (id),
