@@ -14,6 +14,16 @@ public interface DrawResultRepository extends JpaRepository<DrawResult, Long> {
         SELECT dr
         FROM DrawResult dr
         JOIN FETCH dr.reward
+        JOIN FETCH dr.invitationCode
+        WHERE dr.content.code = :contentCode
+        ORDER BY dr.drawnAt DESC
+        """)
+    List<DrawResult> findAllByContentCodeOrderByDrawnAtDesc(@Param("contentCode") String contentCode);
+
+    @Query("""
+        SELECT dr
+        FROM DrawResult dr
+        JOIN FETCH dr.reward
         WHERE dr.invitationCode.id = :drawCodeId
         ORDER BY dr.drawnAt DESC
         """)
