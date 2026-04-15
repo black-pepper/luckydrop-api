@@ -2,11 +2,11 @@ package com.luckydrop.api.service;
 
 import com.luckydrop.api.common.exception.DrawEventException;
 import com.luckydrop.api.common.exception.ErrorCode;
-import com.luckydrop.api.domain.content.dto.AdminContentCreateRequest;
-import com.luckydrop.api.domain.content.dto.AdminContentDeleteResponse;
-import com.luckydrop.api.domain.content.dto.AdminContentDetailResponse;
-import com.luckydrop.api.domain.content.dto.AdminContentResponse;
-import com.luckydrop.api.domain.content.dto.AdminContentUpdateRequest;
+import com.luckydrop.api.domain.content.dto.ManagerContentCreateRequest;
+import com.luckydrop.api.domain.content.dto.ManagerContentDeleteResponse;
+import com.luckydrop.api.domain.content.dto.ManagerContentDetailResponse;
+import com.luckydrop.api.domain.content.dto.ManagerContentResponse;
+import com.luckydrop.api.domain.content.dto.ManagerContentUpdateRequest;
 import com.luckydrop.api.domain.content.entity.Content;
 import com.luckydrop.api.domain.content.repository.ContentRepository;
 import com.luckydrop.api.domain.user.entity.User;
@@ -21,7 +21,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class AdminContentService {
+public class ManagerContentService {
 
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of("DRAW", "QUIZ");
 
@@ -29,7 +29,7 @@ public class AdminContentService {
     private final CurrentUserService currentUserService;
 
     @Transactional
-    public AdminContentResponse create(AdminContentCreateRequest request) {
+    public ManagerContentResponse create(ManagerContentCreateRequest request) {
         String type = normalizeType(request.getType());
         User user = currentUserService.getCurrentUserEntity();
 
@@ -41,40 +41,40 @@ public class AdminContentService {
                 request.getDescription()
         );
 
-        return new AdminContentResponse(contentRepository.save(content));
+        return new ManagerContentResponse(contentRepository.save(content));
     }
 
     @Transactional(readOnly = true)
-    public AdminContentDetailResponse getDetail(String contentCode) {
-        return new AdminContentDetailResponse(getOwnedActiveContent(contentCode));
+    public ManagerContentDetailResponse getDetail(String contentCode) {
+        return new ManagerContentDetailResponse(getOwnedActiveContent(contentCode));
     }
 
     @Transactional(readOnly = true)
-    public List<AdminContentResponse> getContents() {
+    public List<ManagerContentResponse> getContents() {
         Long currentUserId = currentUserService.getCurrentUserEntity().getId();
 
         return contentRepository.findAllActiveByUserIdWithUser(currentUserId)
                 .stream()
-                .map(AdminContentResponse::new)
+                .map(ManagerContentResponse::new)
                 .toList();
     }
 
     @Transactional
-    public AdminContentResponse update(String contentCode, AdminContentUpdateRequest request) {
+    public ManagerContentResponse update(String contentCode, ManagerContentUpdateRequest request) {
         Content content = getOwnedUpdatableContent(contentCode);
         String type = normalizeType(request.getType());
         User user = currentUserService.getCurrentUserEntity();
 
         content.update(type, user, request.getTitle(), request.getDescription());
 
-        return new AdminContentResponse(content);
+        return new ManagerContentResponse(content);
     }
 
     @Transactional
-    public AdminContentDeleteResponse delete(String contentCode) {
+    public ManagerContentDeleteResponse delete(String contentCode) {
         Content content = getOwnedUpdatableContent(contentCode);
         content.delete();
-        return new AdminContentDeleteResponse(content.getCode());
+        return new ManagerContentDeleteResponse(content.getCode());
     }
 
     private Content getOwnedActiveContent(String contentCode) {

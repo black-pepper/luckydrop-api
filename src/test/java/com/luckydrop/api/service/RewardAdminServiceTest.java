@@ -4,7 +4,7 @@ import com.luckydrop.api.common.exception.DrawEventException;
 import com.luckydrop.api.common.exception.ErrorCode;
 import com.luckydrop.api.domain.content.entity.Content;
 import com.luckydrop.api.domain.content.repository.ContentRepository;
-import com.luckydrop.api.domain.reward.dto.AdminRewardResponse;
+import com.luckydrop.api.domain.reward.dto.ManagerRewardResponse;
 import com.luckydrop.api.domain.reward.dto.RewardCreateRequest;
 import com.luckydrop.api.domain.reward.dto.RewardUpdateRequest;
 import com.luckydrop.api.domain.reward.entity.Reward;
@@ -39,7 +39,7 @@ class RewardAdminServiceTest {
     private CurrentUserService currentUserService;
 
     @InjectMocks
-    private RewardAdminService rewardAdminService;
+    private RewardManagerService rewardAdminService;
 
     @Test
     void getRewardsByContentReturnsOwnedRewards() {
@@ -51,7 +51,7 @@ class RewardAdminServiceTest {
         when(contentRepository.findByCodeWithUser("CONTENT-001")).thenReturn(Optional.of(content));
         when(rewardRepository.findAllByContentId(10L)).thenReturn(List.of(reward));
 
-        List<AdminRewardResponse> responses = rewardAdminService.getRewardsByContent("CONTENT-001");
+        List<ManagerRewardResponse> responses = rewardAdminService.getRewardsByContent("CONTENT-001");
 
         assertThat(responses).hasSize(1);
         assertThat(responses.getFirst().getId()).isEqualTo(100L);
@@ -98,7 +98,7 @@ class RewardAdminServiceTest {
             return savedReward;
         });
 
-        AdminRewardResponse response = rewardAdminService.createReward(request);
+        ManagerRewardResponse response = rewardAdminService.createReward(request);
 
         assertThat(response.getId()).isEqualTo(100L);
         assertThat(response.getContentCode()).isEqualTo("CONTENT-001");
@@ -122,7 +122,7 @@ class RewardAdminServiceTest {
         when(currentUserService.getCurrentUserEntity()).thenReturn(currentUser);
         when(rewardRepository.findByIdWithContentAndUser(100L)).thenReturn(Optional.of(reward));
 
-        AdminRewardResponse response = rewardAdminService.updateReward(100L, request);
+        ManagerRewardResponse response = rewardAdminService.updateReward(100L, request);
 
         assertThat(response.getName()).isEqualTo("수정된 경품");
         assertThat(response.getWeight()).isEqualTo(5);

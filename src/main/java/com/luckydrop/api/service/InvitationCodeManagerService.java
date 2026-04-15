@@ -17,7 +17,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class InvitationCodeAdminService {
+public class InvitationCodeManagerService {
 
     private final InvitationCodeRepository invitationCodeRepository;
     private final ContentRepository contentRepository;

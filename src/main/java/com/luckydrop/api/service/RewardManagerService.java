@@ -4,7 +4,7 @@ import com.luckydrop.api.common.exception.DrawEventException;
 import com.luckydrop.api.common.exception.ErrorCode;
 import com.luckydrop.api.domain.content.entity.Content;
 import com.luckydrop.api.domain.content.repository.ContentRepository;
-import com.luckydrop.api.domain.reward.dto.AdminRewardResponse;
+import com.luckydrop.api.domain.reward.dto.ManagerRewardResponse;
 import com.luckydrop.api.domain.reward.dto.RewardCreateRequest;
 import com.luckydrop.api.domain.reward.dto.RewardUpdateRequest;
 import com.luckydrop.api.domain.reward.entity.Reward;
@@ -17,28 +17,28 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class RewardAdminService {
+public class RewardManagerService {
 
     private final RewardRepository rewardRepository;
     private final ContentRepository contentRepository;
     private final CurrentUserService currentUserService;
 
     @Transactional(readOnly = true)
-    public List<AdminRewardResponse> getRewardsByContent(String contentCode) {
+    public List<ManagerRewardResponse> getRewardsByContent(String contentCode) {
         Content content = getOwnedContent(contentCode);
         return rewardRepository.findAllByContentId(content.getId())
                 .stream()
-                .map(AdminRewardResponse::new)
+                .map(ManagerRewardResponse::new)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public AdminRewardResponse getReward(Long rewardId) {
-        return new AdminRewardResponse(getOwnedReward(rewardId));
+    public ManagerRewardResponse getReward(Long rewardId) {
+        return new ManagerRewardResponse(getOwnedReward(rewardId));
     }
 
     @Transactional
-    public AdminRewardResponse createReward(RewardCreateRequest request) {
+    public ManagerRewardResponse createReward(RewardCreateRequest request) {
         Content content = getOwnedContent(request.getContentCode());
         Reward reward = new Reward(
                 request.getName(),
@@ -49,11 +49,11 @@ public class RewardAdminService {
                 request.getAllowDuplicateReward(),
                 content
         );
-        return new AdminRewardResponse(rewardRepository.save(reward));
+        return new ManagerRewardResponse(rewardRepository.save(reward));
     }
 
     @Transactional
-    public AdminRewardResponse updateReward(Long rewardId, RewardUpdateRequest request) {
+    public ManagerRewardResponse updateReward(Long rewardId, RewardUpdateRequest request) {
         Reward reward = getOwnedReward(rewardId);
         reward.update(
                 request.getName(),
@@ -63,7 +63,7 @@ public class RewardAdminService {
                 request.getImageUrl(),
                 request.getAllowDuplicateReward()
         );
-        return new AdminRewardResponse(reward);
+        return new ManagerRewardResponse(reward);
     }
 
     @Transactional

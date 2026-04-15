@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class AdminContentUpdateRequest {
+public class ManagerContentCreateRequest {
 
     @NotBlank(message = "콘텐츠 타입을 입력해주세요.")
     private String type;

@@ -4,7 +4,7 @@ import com.luckydrop.api.common.response.ApiResponse;
 import com.luckydrop.api.domain.invitationcode.dto.InvitationCodeCreateRequest;
 import com.luckydrop.api.domain.invitationcode.dto.InvitationCodeResponse;
 import com.luckydrop.api.domain.invitationcode.dto.InvitationCodeUpdateRequest;
-import com.luckydrop.api.service.InvitationCodeAdminService;
+import com.luckydrop.api.service.InvitationCodeManagerService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -28,39 +28,39 @@ import java.util.List;
 @RequestMapping("/api/manage/invitation-codes")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
-public class AdminInvitationCodeController {
+public class ManagerInvitationCodeController {
 
-    private final InvitationCodeAdminService invitationCodeAdminService;
+    private final InvitationCodeManagerService invitationCodeManagerService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<InvitationCodeResponse>>> getInvitationCodesByContent(
             @RequestParam @NotBlank String contentCode) {
-        return ResponseEntity.ok(ApiResponse.ok(invitationCodeAdminService.getInvitationCodesByContent(contentCode)));
+        return ResponseEntity.ok(ApiResponse.ok(invitationCodeManagerService.getInvitationCodesByContent(contentCode)));
     }
 
     @GetMapping("/{invitationCodeId}")
     public ResponseEntity<ApiResponse<InvitationCodeResponse>> getInvitationCode(
             @PathVariable Long invitationCodeId) {
-        return ResponseEntity.ok(ApiResponse.ok(invitationCodeAdminService.getInvitationCode(invitationCodeId)));
+        return ResponseEntity.ok(ApiResponse.ok(invitationCodeManagerService.getInvitationCode(invitationCodeId)));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<InvitationCodeResponse>> createInvitationCode(
             @RequestBody @Valid InvitationCodeCreateRequest request) {
-        return ResponseEntity.ok(ApiResponse.ok(invitationCodeAdminService.createInvitationCode(request)));
+        return ResponseEntity.ok(ApiResponse.ok(invitationCodeManagerService.createInvitationCode(request)));
     }
 
     @PutMapping("/{invitationCodeId}")
     public ResponseEntity<ApiResponse<InvitationCodeResponse>> updateInvitationCode(
             @PathVariable Long invitationCodeId,
             @RequestBody @Valid InvitationCodeUpdateRequest request) {
-        return ResponseEntity.ok(ApiResponse.ok(invitationCodeAdminService.updateInvitationCode(invitationCodeId, request)));
+        return ResponseEntity.ok(ApiResponse.ok(invitationCodeManagerService.updateInvitationCode(invitationCodeId, request)));
     }
 
     @DeleteMapping("/{invitationCodeId}")
     public ResponseEntity<ApiResponse<Void>> deleteInvitationCode(
             @PathVariable Long invitationCodeId) {
-        invitationCodeAdminService.deleteInvitationCode(invitationCodeId);
+        invitationCodeManagerService.deleteInvitationCode(invitationCodeId);
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 }

@@ -1,10 +1,10 @@
 package com.luckydrop.api.controller;
 
 import com.luckydrop.api.common.response.ApiResponse;
-import com.luckydrop.api.domain.reward.dto.AdminRewardResponse;
+import com.luckydrop.api.domain.reward.dto.ManagerRewardResponse;
 import com.luckydrop.api.domain.reward.dto.RewardCreateRequest;
 import com.luckydrop.api.domain.reward.dto.RewardUpdateRequest;
-import com.luckydrop.api.service.RewardAdminService;
+import com.luckydrop.api.service.RewardManagerService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -28,39 +28,39 @@ import java.util.List;
 @RequestMapping("/api/manage/rewards")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
-public class AdminRewardController {
+public class ManagerRewardController {
 
-    private final RewardAdminService rewardAdminService;
+    private final RewardManagerService rewardManagerService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<AdminRewardResponse>>> getRewardsByContent(
+    public ResponseEntity<ApiResponse<List<ManagerRewardResponse>>> getRewardsByContent(
             @RequestParam @NotBlank String contentCode) {
-        return ResponseEntity.ok(ApiResponse.ok(rewardAdminService.getRewardsByContent(contentCode)));
+        return ResponseEntity.ok(ApiResponse.ok(rewardManagerService.getRewardsByContent(contentCode)));
     }
 
     @GetMapping("/{rewardId}")
-    public ResponseEntity<ApiResponse<AdminRewardResponse>> getReward(
+    public ResponseEntity<ApiResponse<ManagerRewardResponse>> getReward(
             @PathVariable Long rewardId) {
-        return ResponseEntity.ok(ApiResponse.ok(rewardAdminService.getReward(rewardId)));
+        return ResponseEntity.ok(ApiResponse.ok(rewardManagerService.getReward(rewardId)));
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<AdminRewardResponse>> createReward(
+    public ResponseEntity<ApiResponse<ManagerRewardResponse>> createReward(
             @RequestBody @Valid RewardCreateRequest request) {
-        return ResponseEntity.ok(ApiResponse.ok(rewardAdminService.createReward(request)));
+        return ResponseEntity.ok(ApiResponse.ok(rewardManagerService.createReward(request)));
     }
 
     @PutMapping("/{rewardId}")
-    public ResponseEntity<ApiResponse<AdminRewardResponse>> updateReward(
+    public ResponseEntity<ApiResponse<ManagerRewardResponse>> updateReward(
             @PathVariable Long rewardId,
             @RequestBody @Valid RewardUpdateRequest request) {
-        return ResponseEntity.ok(ApiResponse.ok(rewardAdminService.updateReward(rewardId, request)));
+        return ResponseEntity.ok(ApiResponse.ok(rewardManagerService.updateReward(rewardId, request)));
     }
 
     @DeleteMapping("/{rewardId}")
     public ResponseEntity<ApiResponse<Void>> deleteReward(
             @PathVariable Long rewardId) {
-        rewardAdminService.deleteReward(rewardId);
+        rewardManagerService.deleteReward(rewardId);
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 }

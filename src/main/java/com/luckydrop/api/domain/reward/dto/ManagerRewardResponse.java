@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.time.OffsetDateTime;
 
 @Getter
-public class AdminRewardResponse {
+public class ManagerRewardResponse {
 
     private final Long id;
     private final String contentCode;
@@ -21,7 +21,7 @@ public class AdminRewardResponse {
     private final OffsetDateTime createdAt;
     private final OffsetDateTime updatedAt;
 
-    public AdminRewardResponse(Reward reward) {
+    public ManagerRewardResponse(Reward reward) {
         this.id = reward.getId();
         this.contentCode = reward.getContent().getCode();
         this.name = reward.getName();

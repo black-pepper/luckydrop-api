@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.time.OffsetDateTime;
 
 @Getter
-public class AdminContentResponse {
+public class ManagerContentResponse {
 
     private final String code;
     private final String type;
@@ -14,7 +14,7 @@ public class AdminContentResponse {
     private final String description;
     private final OffsetDateTime createdAt;
 
-    public AdminContentResponse(Content content) {
+    public ManagerContentResponse(Content content) {
         this.code = content.getCode();
         this.type = content.getType();
         this.title = content.getTitle();
