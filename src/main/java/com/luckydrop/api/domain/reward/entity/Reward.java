@@ -60,6 +60,9 @@ public class Reward {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
+    @Column(name = "deleted_at")
+    private OffsetDateTime deletedAt;
+
     public Reward(
             String name,
             String description,
@@ -108,7 +111,11 @@ public class Reward {
     }
 
     public void delete() {
-        this.active = false;
+        this.deletedAt = OffsetDateTime.now();
+    }
+
+    public boolean isDeleted() {
+        return deletedAt != null;
     }
 
     public void decreaseStock() {

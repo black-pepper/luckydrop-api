@@ -18,6 +18,7 @@ public interface RewardRepository extends JpaRepository<Reward, Long> {
         JOIN FETCH r.content c
         LEFT JOIN FETCH c.user
         WHERE r.id = :rewardId
+          AND r.deletedAt IS NULL
         """)
     Optional<Reward> findByIdWithContentAndUser(@Param("rewardId") Long rewardId);
 
@@ -27,6 +28,7 @@ public interface RewardRepository extends JpaRepository<Reward, Long> {
         JOIN FETCH r.content c
         LEFT JOIN FETCH c.user
         WHERE c.id = :contentId
+          AND r.deletedAt IS NULL
         ORDER BY r.createdAt DESC, r.id DESC
         """)
     List<Reward> findAllByContentId(@Param("contentId") Long contentId);
@@ -36,6 +38,7 @@ public interface RewardRepository extends JpaRepository<Reward, Long> {
         FROM Reward r
         WHERE r.content.id = :contentId
           AND r.active = true
+          AND r.deletedAt IS NULL
           AND (r.stock IS NULL OR r.stock > 0)
         ORDER BY r.id
         """)
@@ -47,6 +50,7 @@ public interface RewardRepository extends JpaRepository<Reward, Long> {
         FROM Reward r
         WHERE r.content.id = :contentId
           AND r.active = true
+          AND r.deletedAt IS NULL
           AND (r.stock IS NULL OR r.stock > 0)
         ORDER BY r.id
         """)

@@ -17,6 +17,7 @@ public interface InvitationCodeRepository extends JpaRepository<InvitationCode, 
             FROM InvitationCode ic
             JOIN FETCH ic.content c
             WHERE c.id = :contentId
+              AND ic.deletedAt IS NULL
             ORDER BY ic.createdAt DESC
             """)
     List<InvitationCode> findAllByContentId(@Param("contentId") Long contentId);
@@ -27,10 +28,11 @@ public interface InvitationCodeRepository extends JpaRepository<InvitationCode, 
             JOIN FETCH ic.content c
             LEFT JOIN FETCH c.user
             WHERE ic.id = :invitationCodeId
+              AND ic.deletedAt IS NULL
             """)
     Optional<InvitationCode> findByIdWithContentAndUser(@Param("invitationCodeId") Long invitationCodeId);
 
-    boolean existsByContentIdAndCode(Long contentId, String code);
+    boolean existsByContentIdAndCodeAndDeletedAtIsNull(Long contentId, String code);
 
     @Query("""
             SELECT ic
@@ -38,6 +40,7 @@ public interface InvitationCodeRepository extends JpaRepository<InvitationCode, 
             JOIN FETCH ic.content c
             WHERE c.code = :contentCode
               AND ic.code = :invitationCode
+              AND ic.deletedAt IS NULL
             """)
     Optional<InvitationCode> findByContentCodeAndCodeWithContent(
             @Param("contentCode") String contentCode,
@@ -51,6 +54,7 @@ public interface InvitationCodeRepository extends JpaRepository<InvitationCode, 
             JOIN FETCH ic.content c
             WHERE c.code = :contentCode
               AND ic.code = :invitationCode
+              AND ic.deletedAt IS NULL
             """)
     Optional<InvitationCode> findByContentCodeAndCodeWithLock(
             @Param("contentCode") String contentCode,

@@ -64,6 +64,9 @@ public class InvitationCode {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
+    @Column(name = "deleted_at")
+    private OffsetDateTime deletedAt;
+
     public InvitationCode(String code, String name, Content content, int allowedDrawCount, OffsetDateTime expiresAt) {
         this.code = code;
         this.name = name;
@@ -82,7 +85,11 @@ public class InvitationCode {
     }
 
     public void delete() {
-        this.active = false;
+        this.deletedAt = OffsetDateTime.now();
+    }
+
+    public boolean isDeleted() {
+        return deletedAt != null;
     }
 
     public boolean isExpired() {

@@ -91,7 +91,7 @@ public class ManagerRewardService {
         Long currentUserId = currentUserService.getCurrentUserEntity().getId();
         return rewardRepository.findByIdWithContentAndUser(rewardId)
                 .map(reward -> {
-                    if (!reward.isActive()) {
+                    if (reward.isDeleted()) {
                         throw new DrawEventException(ErrorCode.REWARD_NOT_FOUND);
                     }
                     if (reward.getContent() == null || reward.getContent().isDeleted()) {

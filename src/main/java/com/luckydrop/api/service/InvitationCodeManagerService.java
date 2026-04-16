@@ -40,7 +40,7 @@ public class InvitationCodeManagerService {
     @Transactional
     public InvitationCodeResponse createInvitationCode(InvitationCodeCreateRequest request) {
         Content content = getOwnedContent(request.getContentCode());
-        if (invitationCodeRepository.existsByContentIdAndCode(content.getId(), request.getCode())) {
+        if (invitationCodeRepository.existsByContentIdAndCodeAndDeletedAtIsNull(content.getId(), request.getCode())) {
             throw new DrawEventException(ErrorCode.DRAW_CODE_DUPLICATE);
         }
         InvitationCode invitationCode = new InvitationCode(
@@ -90,6 +90,9 @@ public class InvitationCodeManagerService {
         Long currentUserId = currentUserService.getCurrentUserEntity().getId();
         return invitationCodeRepository.findByIdWithContentAndUser(invitationCodeId)
                 .map(invitationCode -> {
+                    if (invitationCode.isDeleted()) {
+                        throw new DrawEventException(ErrorCode.DRAW_CODE_NOT_FOUND);
+                    }
                     if (invitationCode.getContent() == null || invitationCode.getContent().isDeleted()) {
                         throw new DrawEventException(ErrorCode.CONTENT_NOT_FOUND);
                     }
