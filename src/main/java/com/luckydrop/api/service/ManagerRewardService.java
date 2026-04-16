@@ -17,7 +17,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class RewardManagerService {
+public class ManagerRewardService {
 
     private final RewardRepository rewardRepository;
     private final ContentRepository contentRepository;

@@ -1,9 +1,9 @@
 package com.luckydrop.api.controller;
 
 import com.luckydrop.api.common.response.ApiResponse;
-import com.luckydrop.api.domain.drawresult.dto.AdminDrawResultResponse;
+import com.luckydrop.api.domain.drawresult.dto.ManagerDrawResultResponse;
 import com.luckydrop.api.domain.drawresult.dto.DrawResultDeliveryUpdateRequest;
-import com.luckydrop.api.service.AdminDrawResultService;
+import com.luckydrop.api.service.ManagerDrawResultService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -25,24 +25,24 @@ import java.util.List;
 @RequestMapping("/api/manage/draw-results")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
-public class AdminDrawResultController {
+public class ManagerDrawResultController {
 
-    private final AdminDrawResultService adminDrawResultService;
+    private final ManagerDrawResultService managerDrawResultService;
 
     @Operation(summary = "관리자용 추첨 결과 목록 조회", description = "콘텐츠 코드 기준으로 본인 소유 콘텐츠의 추첨 결과 전체 목록을 조회한다.")
     @GetMapping
-    public ResponseEntity<ApiResponse<List<AdminDrawResultResponse>>> getAdminDrawResults(
+    public ResponseEntity<ApiResponse<List<ManagerDrawResultResponse>>> getManagerDrawResults(
             @Parameter(description = "조회할 콘텐츠 코드", example = "CONTENT-001")
             @RequestParam @NotBlank String contentCode) {
-        return ResponseEntity.ok(ApiResponse.ok(adminDrawResultService.getAdminDrawResults(contentCode)));
+        return ResponseEntity.ok(ApiResponse.ok(managerDrawResultService.getManagerDrawResults(contentCode)));
     }
 
     @Operation(summary = "상품 지급 여부 수정", description = "추첨 결과 ID 기준으로 상품 지급 여부를 수정한다. 본인 소유 콘텐츠의 결과만 수정할 수 있다.")
     @PutMapping("/{drawResultId}/delivery")
-    public ResponseEntity<ApiResponse<AdminDrawResultResponse>> updateDeliveryStatus(
+    public ResponseEntity<ApiResponse<ManagerDrawResultResponse>> updateDeliveryStatus(
             @Parameter(description = "수정할 추첨 결과 ID", example = "1")
             @PathVariable Long drawResultId,
             @RequestBody @Valid DrawResultDeliveryUpdateRequest request) {
-        return ResponseEntity.ok(ApiResponse.ok(adminDrawResultService.updateDeliveryStatus(drawResultId, request)));
+        return ResponseEntity.ok(ApiResponse.ok(managerDrawResultService.updateDeliveryStatus(drawResultId, request)));
     }
 }

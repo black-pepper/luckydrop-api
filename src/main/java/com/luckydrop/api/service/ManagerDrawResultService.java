@@ -4,7 +4,7 @@ import com.luckydrop.api.common.exception.DrawEventException;
 import com.luckydrop.api.common.exception.ErrorCode;
 import com.luckydrop.api.domain.content.entity.Content;
 import com.luckydrop.api.domain.content.repository.ContentRepository;
-import com.luckydrop.api.domain.drawresult.dto.AdminDrawResultResponse;
+import com.luckydrop.api.domain.drawresult.dto.ManagerDrawResultResponse;
 import com.luckydrop.api.domain.drawresult.dto.DrawResultDeliveryUpdateRequest;
 import com.luckydrop.api.domain.drawresult.entity.DrawResult;
 import com.luckydrop.api.domain.drawresult.repository.DrawResultRepository;
@@ -17,27 +17,27 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class AdminDrawResultService {
+public class ManagerDrawResultService {
 
     private final DrawResultRepository drawResultRepository;
     private final ContentRepository contentRepository;
     private final CurrentUserService currentUserService;
 
     @Transactional(readOnly = true)
-    public List<AdminDrawResultResponse> getAdminDrawResults(String contentCode) {
+    public List<ManagerDrawResultResponse> getManagerDrawResults(String contentCode) {
         getOwnedActiveContent(contentCode);
 
         return drawResultRepository.findAllByContentCodeOrderByDrawnAtDesc(contentCode)
                 .stream()
-                .map(AdminDrawResultResponse::new)
+                .map(ManagerDrawResultResponse::new)
                 .toList();
     }
 
     @Transactional
-    public AdminDrawResultResponse updateDeliveryStatus(Long drawResultId, DrawResultDeliveryUpdateRequest request) {
+    public ManagerDrawResultResponse updateDeliveryStatus(Long drawResultId, DrawResultDeliveryUpdateRequest request) {
         DrawResult drawResult = getOwnedDrawResult(drawResultId);
         drawResult.updateDelivered(request.getDelivered());
-        return new AdminDrawResultResponse(drawResult);
+        return new ManagerDrawResultResponse(drawResult);
     }
 
     private DrawResult getOwnedDrawResult(Long drawResultId) {

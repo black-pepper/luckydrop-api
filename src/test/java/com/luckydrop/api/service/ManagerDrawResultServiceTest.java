@@ -4,7 +4,7 @@ import com.luckydrop.api.common.exception.DrawEventException;
 import com.luckydrop.api.common.exception.ErrorCode;
 import com.luckydrop.api.domain.content.entity.Content;
 import com.luckydrop.api.domain.content.repository.ContentRepository;
-import com.luckydrop.api.domain.drawresult.dto.AdminDrawResultResponse;
+import com.luckydrop.api.domain.drawresult.dto.ManagerDrawResultResponse;
 import com.luckydrop.api.domain.drawresult.dto.DrawResultDeliveryUpdateRequest;
 import com.luckydrop.api.domain.drawresult.entity.DrawResult;
 import com.luckydrop.api.domain.drawresult.repository.DrawResultRepository;
@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AdminDrawResultServiceTest {
+class ManagerDrawResultServiceTest {
 
     @Mock
     private DrawResultRepository drawResultRepository;
@@ -39,7 +39,7 @@ class AdminDrawResultServiceTest {
     private CurrentUserService currentUserService;
 
     @InjectMocks
-    private AdminDrawResultService adminDrawResultService;
+    private ManagerDrawResultService managerDrawResultService;
 
     @Test
     void 본인_소유_콘텐츠의_추첨_결과_목록을_조회할_수_있다() {
@@ -53,7 +53,7 @@ class AdminDrawResultServiceTest {
         when(drawResultRepository.findAllByContentCodeOrderByDrawnAtDesc("CONTENT-001"))
                 .thenReturn(List.of(drawResult));
 
-        List<AdminDrawResultResponse> results = adminDrawResultService.getAdminDrawResults("CONTENT-001");
+        List<ManagerDrawResultResponse> results = managerDrawResultService.getManagerDrawResults("CONTENT-001");
 
         assertThat(results).hasSize(1);
         assertThat(results.getFirst().getDrawResultId()).isEqualTo(10L);
@@ -71,7 +71,7 @@ class AdminDrawResultServiceTest {
         when(currentUserService.getCurrentUserEntity()).thenReturn(currentUser);
         when(contentRepository.findByCodeWithUser("CONTENT-002")).thenReturn(Optional.of(otherContent));
 
-        assertThatThrownBy(() -> adminDrawResultService.getAdminDrawResults("CONTENT-002"))
+        assertThatThrownBy(() -> managerDrawResultService.getManagerDrawResults("CONTENT-002"))
                 .isInstanceOf(DrawEventException.class)
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.CONTENT_NOT_FOUND);
@@ -89,7 +89,7 @@ class AdminDrawResultServiceTest {
         when(currentUserService.getCurrentUserEntity()).thenReturn(owner);
         when(drawResultRepository.findById(10L)).thenReturn(Optional.of(drawResult));
 
-        AdminDrawResultResponse response = adminDrawResultService.updateDeliveryStatus(10L, request);
+        ManagerDrawResultResponse response = managerDrawResultService.updateDeliveryStatus(10L, request);
 
         assertThat(response.isDelivered()).isTrue();
     }
@@ -101,7 +101,7 @@ class AdminDrawResultServiceTest {
         DrawResultDeliveryUpdateRequest request = new DrawResultDeliveryUpdateRequest();
         ReflectionTestUtils.setField(request, "delivered", true);
 
-        assertThatThrownBy(() -> adminDrawResultService.updateDeliveryStatus(999L, request))
+        assertThatThrownBy(() -> managerDrawResultService.updateDeliveryStatus(999L, request))
                 .isInstanceOf(DrawEventException.class)
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.DRAW_RESULT_NOT_FOUND);
@@ -120,7 +120,7 @@ class AdminDrawResultServiceTest {
         when(currentUserService.getCurrentUserEntity()).thenReturn(currentUser);
         when(drawResultRepository.findById(10L)).thenReturn(Optional.of(drawResult));
 
-        assertThatThrownBy(() -> adminDrawResultService.updateDeliveryStatus(10L, request))
+        assertThatThrownBy(() -> managerDrawResultService.updateDeliveryStatus(10L, request))
                 .isInstanceOf(DrawEventException.class)
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.FORBIDDEN_CONTENT_ACCESS);

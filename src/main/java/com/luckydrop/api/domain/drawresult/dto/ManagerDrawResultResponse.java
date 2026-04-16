@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.time.OffsetDateTime;
 
 @Getter
-public class AdminDrawResultResponse {
+public class ManagerDrawResultResponse {
 
     private final Long drawResultId;
     private final String invitationCode;
@@ -16,7 +16,7 @@ public class AdminDrawResultResponse {
     private final OffsetDateTime drawnAt;
     private final boolean delivered;
 
-    public AdminDrawResultResponse(DrawResult result) {
+    public ManagerDrawResultResponse(DrawResult result) {
         this.drawResultId = result.getId();
         this.invitationCode = result.getInvitationCode().getCode();
         this.invitationCodeName = result.getInvitationCode().getName();

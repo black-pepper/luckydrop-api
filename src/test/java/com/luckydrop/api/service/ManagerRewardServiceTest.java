@@ -27,7 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class RewardAdminServiceTest {
+class ManagerRewardServiceTest {
 
     @Mock
     private RewardRepository rewardRepository;
@@ -39,7 +39,7 @@ class RewardAdminServiceTest {
     private CurrentUserService currentUserService;
 
     @InjectMocks
-    private RewardManagerService rewardAdminService;
+    private ManagerRewardService rewardManagerService;
 
     @Test
     void getRewardsByContentReturnsOwnedRewards() {
@@ -51,7 +51,7 @@ class RewardAdminServiceTest {
         when(contentRepository.findByCodeWithUser("CONTENT-001")).thenReturn(Optional.of(content));
         when(rewardRepository.findAllByContentId(10L)).thenReturn(List.of(reward));
 
-        List<ManagerRewardResponse> responses = rewardAdminService.getRewardsByContent("CONTENT-001");
+        List<ManagerRewardResponse> responses = rewardManagerService.getRewardsByContent("CONTENT-001");
 
         assertThat(responses).hasSize(1);
         assertThat(responses.getFirst().getId()).isEqualTo(100L);
@@ -69,7 +69,7 @@ class RewardAdminServiceTest {
         when(currentUserService.getCurrentUserEntity()).thenReturn(currentUser);
         when(rewardRepository.findByIdWithContentAndUser(100L)).thenReturn(Optional.of(reward));
 
-        assertThatThrownBy(() -> rewardAdminService.getReward(100L))
+        assertThatThrownBy(() -> rewardManagerService.getReward(100L))
                 .isInstanceOf(DrawEventException.class)
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.FORBIDDEN_CONTENT_ACCESS);
@@ -98,7 +98,7 @@ class RewardAdminServiceTest {
             return savedReward;
         });
 
-        ManagerRewardResponse response = rewardAdminService.createReward(request);
+        ManagerRewardResponse response = rewardManagerService.createReward(request);
 
         assertThat(response.getId()).isEqualTo(100L);
         assertThat(response.getContentCode()).isEqualTo("CONTENT-001");
@@ -122,7 +122,7 @@ class RewardAdminServiceTest {
         when(currentUserService.getCurrentUserEntity()).thenReturn(currentUser);
         when(rewardRepository.findByIdWithContentAndUser(100L)).thenReturn(Optional.of(reward));
 
-        ManagerRewardResponse response = rewardAdminService.updateReward(100L, request);
+        ManagerRewardResponse response = rewardManagerService.updateReward(100L, request);
 
         assertThat(response.getName()).isEqualTo("수정된 경품");
         assertThat(response.getWeight()).isEqualTo(5);
@@ -138,7 +138,7 @@ class RewardAdminServiceTest {
         when(currentUserService.getCurrentUserEntity()).thenReturn(currentUser);
         when(rewardRepository.findByIdWithContentAndUser(100L)).thenReturn(Optional.of(reward));
 
-        rewardAdminService.deleteReward(100L);
+        rewardManagerService.deleteReward(100L);
 
         assertThat(reward.isActive()).isFalse();
     }
