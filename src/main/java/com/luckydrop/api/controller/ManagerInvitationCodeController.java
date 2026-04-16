@@ -4,7 +4,7 @@ import com.luckydrop.api.common.response.ApiResponse;
 import com.luckydrop.api.domain.invitationcode.dto.InvitationCodeCreateRequest;
 import com.luckydrop.api.domain.invitationcode.dto.InvitationCodeResponse;
 import com.luckydrop.api.domain.invitationcode.dto.InvitationCodeUpdateRequest;
-import com.luckydrop.api.service.InvitationCodeManagerService;
+import com.luckydrop.api.service.ManagerInvitationCodeService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -30,7 +30,7 @@ import java.util.List;
 @SecurityRequirement(name = "bearerAuth")
 public class ManagerInvitationCodeController {
 
-    private final InvitationCodeManagerService invitationCodeManagerService;
+    private final ManagerInvitationCodeService invitationCodeManagerService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<InvitationCodeResponse>>> getInvitationCodesByContent(

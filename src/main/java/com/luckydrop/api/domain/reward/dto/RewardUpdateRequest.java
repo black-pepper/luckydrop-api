@@ -29,4 +29,7 @@ public class RewardUpdateRequest {
     private String imageUrl;
 
     private Boolean allowDuplicateReward;
+
+    @NotNull(message = "활성화 여부를 입력해 주세요.")
+    private Boolean active;
 }
