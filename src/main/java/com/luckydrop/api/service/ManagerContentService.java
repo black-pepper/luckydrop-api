@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -32,13 +33,16 @@ public class ManagerContentService {
     public ManagerContentResponse create(ManagerContentCreateRequest request) {
         String type = normalizeType(request.getType());
         User user = currentUserService.getCurrentUserEntity();
+        validatePeriod(request.getStartAt(), request.getEndAt());
 
         Content content = new Content(
                 generateUniqueCode(),
                 type,
                 user,
                 request.getTitle(),
-                request.getDescription()
+                request.getDescription(),
+                request.getStartAt(),
+                request.getEndAt()
         );
 
         return new ManagerContentResponse(contentRepository.save(content));
@@ -64,8 +68,10 @@ public class ManagerContentService {
         Content content = getOwnedUpdatableContent(contentCode);
         String type = normalizeType(request.getType());
         User user = currentUserService.getCurrentUserEntity();
+        validatePeriod(request.getStartAt(), request.getEndAt());
 
-        content.update(type, user, request.getTitle(), request.getDescription());
+        content.update(type, user, request.getTitle(), request.getDescription(),
+                request.getStartAt(), request.getEndAt());
 
         return new ManagerContentResponse(content);
     }
@@ -111,6 +117,12 @@ public class ManagerContentService {
             throw new DrawEventException(ErrorCode.CONTENT_TYPE_INVALID);
         }
         return normalizedType;
+    }
+
+    private void validatePeriod(OffsetDateTime startAt, OffsetDateTime endAt) {
+        if (startAt != null && endAt != null && startAt.isAfter(endAt)) {
+            throw new DrawEventException(ErrorCode.CONTENT_PERIOD_INVALID);
+        }
     }
 
     private String generateUniqueCode() {

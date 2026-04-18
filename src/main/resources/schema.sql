@@ -16,6 +16,8 @@ create table public.contents (
   title text null,
   description text null,
   deleted_at timestamp with time zone null,
+  start_at timestamp with time zone null,
+  end_at timestamp with time zone null,
   constraint contents_pkey primary key (id),
   constraint contents_code_key unique (code),
   constraint contents_user_id_fkey foreign key (user_id) references public.users (id),

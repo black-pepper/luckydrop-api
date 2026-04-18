@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.OffsetDateTime;
+
 @Getter
 @NoArgsConstructor
 public class ManagerContentUpdateRequest {
@@ -16,4 +18,8 @@ public class ManagerContentUpdateRequest {
 
     @NotBlank(message = "콘텐츠 설명을 입력해주세요.")
     private String description;
+
+    private OffsetDateTime startAt;
+
+    private OffsetDateTime endAt;
 }
