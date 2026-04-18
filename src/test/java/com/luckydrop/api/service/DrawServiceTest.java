@@ -81,6 +81,38 @@ class DrawServiceTest {
                 .isEqualTo(ErrorCode.CODE_NOT_FOUND);
     }
 
+    @Test
+    void drawThrowsWhenContentNotStarted() {
+        DrawRequest request = createDrawRequest("CONTENT-001", "INVITE-001");
+        Content content = createContent("CONTENT-001");
+        ReflectionTestUtils.setField(content, "startAt", OffsetDateTime.now().plusDays(1));
+        InvitationCode invitationCode = createInvitationCode("INVITE-001", content);
+
+        when(invitationCodeRepository.findByContentCodeAndCodeWithLock("CONTENT-001", "INVITE-001"))
+                .thenReturn(Optional.of(invitationCode));
+
+        assertThatThrownBy(() -> drawService.draw(request))
+                .isInstanceOf(DrawEventException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.CONTENT_NOT_STARTED);
+    }
+
+    @Test
+    void drawThrowsWhenContentExpired() {
+        DrawRequest request = createDrawRequest("CONTENT-001", "INVITE-001");
+        Content content = createContent("CONTENT-001");
+        ReflectionTestUtils.setField(content, "endAt", OffsetDateTime.now().minusDays(1));
+        InvitationCode invitationCode = createInvitationCode("INVITE-001", content);
+
+        when(invitationCodeRepository.findByContentCodeAndCodeWithLock("CONTENT-001", "INVITE-001"))
+                .thenReturn(Optional.of(invitationCode));
+
+        assertThatThrownBy(() -> drawService.draw(request))
+                .isInstanceOf(DrawEventException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.CONTENT_EXPIRED);
+    }
+
     private DrawRequest createDrawRequest(String contentCode, String invitationCode) {
         DrawRequest request = new DrawRequest();
         ReflectionTestUtils.setField(request, "contentCode", contentCode);
