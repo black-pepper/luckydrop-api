@@ -17,7 +17,6 @@ public interface InvitationCodeRepository extends JpaRepository<InvitationCode, 
             FROM InvitationCode ic
             JOIN FETCH ic.content c
             WHERE c.id = :contentId
-              AND ic.deletedAt IS NULL
             ORDER BY ic.createdAt DESC
             """)
     List<InvitationCode> findAllByContentId(@Param("contentId") Long contentId);

@@ -8,6 +8,7 @@ import com.luckydrop.api.domain.content.dto.ManagerContentDetailResponse;
 import com.luckydrop.api.domain.content.dto.ManagerContentResponse;
 import com.luckydrop.api.domain.content.dto.ManagerContentUpdateRequest;
 import com.luckydrop.api.domain.content.entity.Content;
+import com.luckydrop.api.domain.content.entity.ContentType;
 import com.luckydrop.api.domain.content.repository.ContentRepository;
 import com.luckydrop.api.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -16,21 +17,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class ManagerContentService {
 
-    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of("DRAW", "QUIZ");
-
     private final ContentRepository contentRepository;
     private final CurrentUserService currentUserService;
 
     @Transactional
     public ManagerContentResponse create(ManagerContentCreateRequest request) {
-        String type = normalizeType(request.getType());
+        ContentType type = ContentType.from(request.getType());
+        if (type == null) {
+            throw new DrawEventException(ErrorCode.CONTENT_TYPE_INVALID);
+        }
         User user = currentUserService.getCurrentUserEntity();
 
         Content content = new Content(
@@ -62,7 +63,10 @@ public class ManagerContentService {
     @Transactional
     public ManagerContentResponse update(String contentCode, ManagerContentUpdateRequest request) {
         Content content = getOwnedUpdatableContent(contentCode);
-        String type = normalizeType(request.getType());
+        ContentType type = ContentType.from(request.getType());
+        if (type == null) {
+            throw new DrawEventException(ErrorCode.CONTENT_TYPE_INVALID);
+        }
         User user = currentUserService.getCurrentUserEntity();
 
         content.update(type, user, request.getTitle(), request.getDescription());
@@ -103,14 +107,6 @@ public class ManagerContentService {
     private boolean isOwnedByCurrentUser(Content content) {
         User currentUser = currentUserService.getCurrentUserEntity();
         return content.getUser() != null && content.getUser().getId().equals(currentUser.getId());
-    }
-
-    private String normalizeType(String type) {
-        String normalizedType = type.trim().toUpperCase(Locale.ROOT);
-        if (!ALLOWED_CONTENT_TYPES.contains(normalizedType)) {
-            throw new DrawEventException(ErrorCode.CONTENT_TYPE_INVALID);
-        }
-        return normalizedType;
     }
 
     private String generateUniqueCode() {

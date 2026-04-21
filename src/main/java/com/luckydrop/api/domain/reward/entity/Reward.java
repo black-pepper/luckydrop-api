@@ -1,5 +1,7 @@
 package com.luckydrop.api.domain.reward.entity;
 
+import com.luckydrop.api.common.exception.DrawEventException;
+import com.luckydrop.api.common.exception.ErrorCode;
 import com.luckydrop.api.domain.content.entity.Content;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -121,7 +123,7 @@ public class Reward {
     public void decreaseStock() {
         if (this.stock != null) {
             if (this.stock <= 0) {
-                throw new IllegalStateException("Out of stock.");
+                throw new DrawEventException(ErrorCode.REWARD_OUT_OF_STOCK);
             }
             this.stock--;
         }

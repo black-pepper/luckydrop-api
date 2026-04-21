@@ -1,5 +1,7 @@
 package com.luckydrop.api.domain.invitationcode.entity;
 
+import com.luckydrop.api.common.exception.DrawEventException;
+import com.luckydrop.api.common.exception.ErrorCode;
 import com.luckydrop.api.domain.content.entity.Content;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -106,7 +108,7 @@ public class InvitationCode {
 
     public void use() {
         if (hasNoRemaining()) {
-            throw new IllegalStateException("No remaining draws.");
+            throw new DrawEventException(ErrorCode.INVITATION_CODE_USAGE_EXCEEDED);
         }
         this.usedDrawCount++;
         this.lastUsedAt = OffsetDateTime.now();
