@@ -1,6 +1,7 @@
 package com.luckydrop.api.domain.content.dto;
 
 import com.luckydrop.api.domain.content.entity.Content;
+import com.luckydrop.api.domain.content.entity.ContentType;
 import lombok.Getter;
 
 import java.time.OffsetDateTime;
@@ -9,7 +10,7 @@ import java.time.OffsetDateTime;
 public class ParticipantContentDetailResponse {
 
     private final String code;
-    private final String type;
+    private final ContentType type;
     private final String title;
     private final String description;
     private final OffsetDateTime createdAt;

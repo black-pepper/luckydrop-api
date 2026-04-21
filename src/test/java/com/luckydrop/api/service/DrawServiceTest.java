@@ -3,6 +3,7 @@ package com.luckydrop.api.service;
 import com.luckydrop.api.common.exception.DrawEventException;
 import com.luckydrop.api.common.exception.ErrorCode;
 import com.luckydrop.api.domain.content.entity.Content;
+import com.luckydrop.api.domain.content.entity.ContentType;
 import com.luckydrop.api.domain.invitationcode.entity.InvitationCode;
 import com.luckydrop.api.domain.invitationcode.repository.InvitationCodeRepository;
 import com.luckydrop.api.domain.drawresult.dto.DrawRequest;
@@ -121,7 +122,7 @@ class DrawServiceTest {
     }
 
     private Content createContent(String code) {
-        Content content = new Content(code, "DRAW", new User(), "Lucky Drop", "Event description");
+        Content content = new Content(code, ContentType.DRAW, new User(), "Lucky Drop", "Event description");
         ReflectionTestUtils.setField(content, "id", 10L);
         ReflectionTestUtils.setField(content, "createdAt", OffsetDateTime.parse("2026-04-06T10:15:30+09:00"));
         return content;

@@ -29,10 +29,7 @@ public class ManagerContentService {
 
     @Transactional
     public ManagerContentResponse create(ManagerContentCreateRequest request) {
-        ContentType type = ContentType.from(request.getType());
-        if (type == null) {
-            throw new DrawEventException(ErrorCode.CONTENT_TYPE_INVALID);
-        }
+        ContentType type = request.getType();
         User user = currentUserService.getCurrentUserEntity();
         validatePeriod(request.getStartAt(), request.getEndAt());
 
@@ -67,10 +64,7 @@ public class ManagerContentService {
     @Transactional
     public ManagerContentResponse update(String contentCode, ManagerContentUpdateRequest request) {
         Content content = getOwnedUpdatableContent(contentCode);
-        ContentType type = ContentType.from(request.getType());
-        if (type == null) {
-            throw new DrawEventException(ErrorCode.CONTENT_TYPE_INVALID);
-        }
+        ContentType type = request.getType();
         User user = currentUserService.getCurrentUserEntity();
         validatePeriod(request.getStartAt(), request.getEndAt());
 

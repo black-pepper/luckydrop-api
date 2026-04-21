@@ -3,6 +3,7 @@ package com.luckydrop.api.service;
 import com.luckydrop.api.common.exception.DrawEventException;
 import com.luckydrop.api.common.exception.ErrorCode;
 import com.luckydrop.api.domain.content.entity.Content;
+import com.luckydrop.api.domain.content.entity.ContentType;
 import com.luckydrop.api.domain.content.repository.ContentRepository;
 import com.luckydrop.api.domain.reward.dto.ManagerRewardResponse;
 import com.luckydrop.api.domain.reward.dto.RewardCreateRequest;
@@ -140,7 +141,7 @@ class ManagerRewardServiceTest {
 
         rewardManagerService.deleteReward(100L);
 
-        assertThat(reward.isActive()).isFalse();
+        assertThat(reward.isDeleted()).isTrue();
     }
 
     private User createUser(Long id) {
@@ -150,7 +151,7 @@ class ManagerRewardServiceTest {
     }
 
     private Content createContent(Long id, User user, boolean deleted) {
-        Content content = new Content("CONTENT-001", "DRAW", user, "Lucky Drop", "Event description");
+        Content content = new Content("CONTENT-001", ContentType.DRAW, user, "Lucky Drop", "Event description");
         ReflectionTestUtils.setField(content, "id", id);
         ReflectionTestUtils.setField(content, "createdAt", OffsetDateTime.parse("2026-04-12T09:00:00+09:00"));
         if (deleted) {
