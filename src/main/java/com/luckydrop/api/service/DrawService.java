@@ -2,6 +2,7 @@ package com.luckydrop.api.service;
 
 import com.luckydrop.api.common.exception.DrawEventException;
 import com.luckydrop.api.common.exception.ErrorCode;
+import com.luckydrop.api.domain.content.entity.Content;
 import com.luckydrop.api.domain.invitationcode.entity.InvitationCode;
 import com.luckydrop.api.domain.invitationcode.repository.InvitationCodeRepository;
 import com.luckydrop.api.domain.drawresult.dto.DrawRequest;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -100,6 +102,17 @@ public class DrawService {
         }
         if (invitationCode.hasNoRemaining()) {
             throw new DrawEventException(ErrorCode.CODE_NO_REMAINING);
+        }
+        validateContentPeriod(invitationCode.getContent());
+    }
+
+    private void validateContentPeriod(Content content) {
+        OffsetDateTime now = OffsetDateTime.now();
+        if (content.getStartAt() != null && now.isBefore(content.getStartAt())) {
+            throw new DrawEventException(ErrorCode.CONTENT_NOT_STARTED);
+        }
+        if (content.getEndAt() != null && now.isAfter(content.getEndAt())) {
+            throw new DrawEventException(ErrorCode.CONTENT_EXPIRED);
         }
     }
 }

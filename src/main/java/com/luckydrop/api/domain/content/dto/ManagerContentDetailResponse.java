@@ -13,6 +13,8 @@ public class ManagerContentDetailResponse {
     private final String title;
     private final String description;
     private final OffsetDateTime createdAt;
+    private final OffsetDateTime startAt;
+    private final OffsetDateTime endAt;
 
     public ManagerContentDetailResponse(Content content) {
         this.code = content.getCode();
@@ -20,5 +22,7 @@ public class ManagerContentDetailResponse {
         this.title = content.getTitle();
         this.description = content.getDescription();
         this.createdAt = content.getCreatedAt();
+        this.startAt = content.getStartAt();
+        this.endAt = content.getEndAt();
     }
 }

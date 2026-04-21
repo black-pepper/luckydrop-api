@@ -52,6 +52,12 @@ public class Content {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
+    @Column(name = "start_at")
+    private OffsetDateTime startAt;
+
+    @Column(name = "end_at")
+    private OffsetDateTime endAt;
+
     public Content(String code, ContentType type, User user, String title, String description) {
         this.code = code;
         this.type = type;
@@ -60,11 +66,25 @@ public class Content {
         this.description = description;
     }
 
-    public void update(ContentType type, User user, String title, String description) {
+    public Content(String code, ContentType type, User user, String title, String description,
+                   OffsetDateTime startAt, OffsetDateTime endAt) {
+        this.code = code;
         this.type = type;
         this.user = user;
         this.title = title;
         this.description = description;
+        this.startAt = startAt;
+        this.endAt = endAt;
+    }
+
+    public void update(ContentType type, User user, String title, String description,
+                       OffsetDateTime startAt, OffsetDateTime endAt) {
+        this.type = type;
+        this.user = user;
+        this.title = title;
+        this.description = description;
+        this.startAt = startAt;
+        this.endAt = endAt;
     }
 
     public void delete() {
@@ -73,5 +93,16 @@ public class Content {
 
     public boolean isDeleted() {
         return deletedAt != null;
+    }
+
+    public boolean isAvailableNow() {
+        OffsetDateTime now = OffsetDateTime.now();
+        if (startAt != null && now.isBefore(startAt)) {
+            return false;
+        }
+        if (endAt != null && now.isAfter(endAt)) {
+            return false;
+        }
+        return true;
     }
 }
