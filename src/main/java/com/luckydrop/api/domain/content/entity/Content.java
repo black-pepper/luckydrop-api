@@ -97,14 +97,15 @@ public class Content {
         return deletedAt != null;
     }
 
+    public boolean isNotStartedYet() {
+        return startAt != null && OffsetDateTime.now().isBefore(startAt);
+    }
+
+    public boolean isAlreadyEnded() {
+        return endAt != null && OffsetDateTime.now().isAfter(endAt);
+    }
+
     public boolean isAvailableNow() {
-        OffsetDateTime now = OffsetDateTime.now();
-        if (startAt != null && now.isBefore(startAt)) {
-            return false;
-        }
-        if (endAt != null && now.isAfter(endAt)) {
-            return false;
-        }
-        return true;
+        return !isNotStartedYet() && !isAlreadyEnded();
     }
 }

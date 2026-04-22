@@ -107,11 +107,10 @@ public class DrawService {
     }
 
     private void validateContentPeriod(Content content) {
-        OffsetDateTime now = OffsetDateTime.now();
-        if (content.getStartAt() != null && now.isBefore(content.getStartAt())) {
+        if (content.isNotStartedYet()) {
             throw new DrawEventException(ErrorCode.CONTENT_NOT_STARTED);
         }
-        if (content.getEndAt() != null && now.isAfter(content.getEndAt())) {
+        if (content.isAlreadyEnded()) {
             throw new DrawEventException(ErrorCode.CONTENT_EXPIRED);
         }
     }
