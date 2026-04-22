@@ -24,7 +24,17 @@ public class CurrentUserService {
 
     @Transactional(readOnly = true)
     public User getCurrentUserEntity() {
-        return userRepository.findByAuthId(currentUserAuthIdProvider.getCurrentAuthId())
+        return userRepository.findByAuthIdAndDeletedAtIsNull(currentUserAuthIdProvider.getCurrentAuthId())
                 .orElseThrow(() -> new DrawEventException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    @Transactional
+    public User softDeleteCurrentUser() {
+        User user = getCurrentUserEntity();
+        if (user.isDeleted()) {
+            throw new DrawEventException(ErrorCode.USER_ALREADY_DELETED);
+        }
+        user.delete();
+        return user;
     }
 }

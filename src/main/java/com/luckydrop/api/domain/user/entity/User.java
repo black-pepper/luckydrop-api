@@ -32,4 +32,15 @@ public class User {
 
     @Column(name = "auth_id")
     private UUID authId;
+
+    @Column(name = "deleted_at")
+    private OffsetDateTime deletedAt;
+
+    public boolean isDeleted() {
+        return deletedAt != null;
+    }
+
+    public void delete() {
+        this.deletedAt = OffsetDateTime.now();
+    }
 }

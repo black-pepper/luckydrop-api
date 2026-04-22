@@ -3,6 +3,7 @@ create table public.users (
   created_at timestamp with time zone not null default now(),
   name text null,
   auth_id uuid null,
+  deleted_at timestamp with time zone null,
   constraint users_pkey primary key (id),
   constraint users_auth_id_fkey foreign key (auth_id) references auth.users (id)
 );

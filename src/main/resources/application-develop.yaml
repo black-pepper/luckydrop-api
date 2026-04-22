@@ -19,6 +19,9 @@ app:
       issuer-uri: ${SUPABASE_ISSUER_URI}
       jwk-set-uri: ${SUPABASE_JWK_SET_URI:${SUPABASE_ISSUER_URI}/.well-known/jwks.json}
       audience: ${SUPABASE_JWT_AUDIENCE:authenticated}
+    supabase:
+      admin-api-url: ${SUPABASE_ISSUER_URI}
+      service-role-key: ${SUPABASE_SERVICE_ROLE_KEY}
     public-paths:
       - /error
       - /api/draw/**
