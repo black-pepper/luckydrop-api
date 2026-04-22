@@ -45,7 +45,7 @@ public class ManagerDrawResultService {
                 .orElseThrow(() -> new DrawEventException(ErrorCode.DRAW_RESULT_NOT_FOUND));
 
         if (!isOwnedByCurrentUser(drawResult.getContent())) {
-            throw new DrawEventException(ErrorCode.FORBIDDEN_CONTENT_ACCESS);
+            throw new DrawEventException(ErrorCode.CONTENT_NOT_FOUND);
         }
         return drawResult;
     }

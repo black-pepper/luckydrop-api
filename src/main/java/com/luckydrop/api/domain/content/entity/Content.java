@@ -15,6 +15,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.OffsetDateTime;
 
@@ -22,6 +23,7 @@ import java.time.OffsetDateTime;
 @Table(name = "contents")
 @Getter
 @NoArgsConstructor
+@SQLRestriction("deleted_at IS NULL")
 public class Content {
 
     @Id
@@ -95,14 +97,15 @@ public class Content {
         return deletedAt != null;
     }
 
+    public boolean isNotStartedYet() {
+        return startAt != null && OffsetDateTime.now().isBefore(startAt);
+    }
+
+    public boolean isAlreadyEnded() {
+        return endAt != null && OffsetDateTime.now().isAfter(endAt);
+    }
+
     public boolean isAvailableNow() {
-        OffsetDateTime now = OffsetDateTime.now();
-        if (startAt != null && now.isBefore(startAt)) {
-            return false;
-        }
-        if (endAt != null && now.isAfter(endAt)) {
-            return false;
-        }
-        return true;
+        return !isNotStartedYet() && !isAlreadyEnded();
     }
 }

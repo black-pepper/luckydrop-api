@@ -15,6 +15,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
@@ -23,6 +24,7 @@ import java.time.OffsetDateTime;
 @Table(name = "rewards")
 @Getter
 @NoArgsConstructor
+@SQLRestriction("deleted_at IS NULL")
 public class Reward {
 
     @Id

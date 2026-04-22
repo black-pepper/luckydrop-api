@@ -124,7 +124,7 @@ class ManagerDrawResultServiceTest {
         assertThatThrownBy(() -> managerDrawResultService.updateDeliveryStatus(10L, request))
                 .isInstanceOf(DrawEventException.class)
                 .extracting("errorCode")
-                .isEqualTo(ErrorCode.FORBIDDEN_CONTENT_ACCESS);
+                .isEqualTo(ErrorCode.CONTENT_NOT_FOUND);
     }
 
     private User createUser(Long id) {
