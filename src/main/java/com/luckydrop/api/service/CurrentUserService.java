@@ -3,6 +3,7 @@ package com.luckydrop.api.service;
 import com.luckydrop.api.common.exception.DrawEventException;
 import com.luckydrop.api.common.exception.ErrorCode;
 import com.luckydrop.api.domain.user.dto.CurrentUser;
+import com.luckydrop.api.domain.user.dto.UserRequest;
 import com.luckydrop.api.domain.user.entity.User;
 import com.luckydrop.api.domain.user.repository.UserRepository;
 import com.luckydrop.api.security.CurrentUserAuthIdProvider;
@@ -36,5 +37,12 @@ public class CurrentUserService {
         }
         user.delete();
         return user;
+    }
+
+    @Transactional
+    public void updateCurrentUserEntity(UserRequest request) {
+        User user = userRepository.findByAuthIdAndDeletedAtIsNull(currentUserAuthIdProvider.getCurrentAuthId())
+                .orElseThrow(() -> new DrawEventException(ErrorCode.USER_NOT_FOUND));
+        user.setName(request.getName());
     }
 }
