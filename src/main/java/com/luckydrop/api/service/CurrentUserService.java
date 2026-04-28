@@ -37,13 +37,14 @@ public class CurrentUserService {
     }
 
     @Transactional
-    public User softDeleteCurrentUser() {
+    public UUID softDeleteCurrentUser() {
         User user = getCurrentUserEntity();
         if (user.isDeleted()) {
             throw new DrawEventException(ErrorCode.USER_ALREADY_DELETED);
         }
+        UUID authId = user.getAuthId();
         user.delete();
-        return user;
+        return authId;
     }
 
     @Transactional
