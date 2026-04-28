@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
@@ -32,6 +33,22 @@ public class LoggingAuthenticationEntryPoint implements AuthenticationEntryPoint
             HttpServletResponse response,
             AuthenticationException authException
     ) throws IOException {
+        boolean isIoFailure = authException instanceof AuthenticationServiceException
+                && hasCause(authException, IOException.class);
+
+        if (isIoFailure) {
+            log.error("JWKS retrieval failed. method={}, uri={}",
+                    request.getMethod(),
+                    request.getRequestURI(),
+                    authException);
+            response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.getWriter().write(OBJECT_MAPPER.writeValueAsString(
+                    ApiResponse.fail("인증 서버에 일시적으로 연결할 수 없습니다. 잠시 후 다시 시도해주세요.")));
+            return;
+        }
+
         if (logFailure) {
             log.warn("Authentication failed. method={}, uri={}",
                     request.getMethod(),
@@ -42,5 +59,14 @@ public class LoggingAuthenticationEntryPoint implements AuthenticationEntryPoint
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().write(OBJECT_MAPPER.writeValueAsString(ApiResponse.fail("인증 정보가 없습니다.")));
+    }
+
+    private static boolean hasCause(Throwable throwable, Class<? extends Throwable> type) {
+        for (Throwable cause = throwable.getCause(); cause != null; cause = cause.getCause()) {
+            if (type.isInstance(cause)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
