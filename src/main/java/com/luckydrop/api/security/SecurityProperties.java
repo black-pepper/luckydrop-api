@@ -14,6 +14,7 @@ public class SecurityProperties {
 
     private final Cors cors = new Cors();
     private final Jwt jwt = new Jwt();
+    private final Supabase supabase = new Supabase();
     private List<String> publicPaths = new ArrayList<>();
 
     @Getter
@@ -28,5 +29,12 @@ public class SecurityProperties {
         private String issuerUri;
         private String jwkSetUri;
         private String audience;
+    }
+
+    @Getter
+    @Setter
+    public static class Supabase {
+        private String adminApiUrl;
+        private String serviceRoleKey;
     }
 }
