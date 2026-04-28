@@ -49,9 +49,10 @@ public class CurrentUserService {
     }
 
     @Transactional
-    public void updateCurrentUserEntity(UserRequest request) {
+    public User updateCurrentUserEntity(UserRequest request) {
         User user = userRepository.findByAuthIdAndDeletedAtIsNull(currentUserAuthIdProvider.getCurrentAuthId())
                 .orElseThrow(() -> new DrawEventException(ErrorCode.USER_NOT_FOUND));
         user.setName(request.getName());
+        return user;
     }
 }

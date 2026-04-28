@@ -30,8 +30,8 @@ public class UserController {
 
     @PutMapping("/user")
     public ResponseEntity<ApiResponse<UserInfo>> updateCurrentUser(@RequestBody @Valid UserRequest request) {
-        currentUserService.updateCurrentUserEntity(request);
-        return ResponseEntity.ok(ApiResponse.ok(null));
+        UserInfo userInfo = UserInfo.from(currentUserService.updateCurrentUserEntity(request));
+        return ResponseEntity.ok(ApiResponse.ok(userInfo));
     }
 
     @DeleteMapping("/user")
