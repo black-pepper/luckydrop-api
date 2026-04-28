@@ -32,6 +32,7 @@ public class CurrentUserService {
                 .orElseGet(() -> {
                     User newUser = new User();
                     newUser.setAuthId(authId);
+                    newUser.setName(currentUserAuthIdProvider.getCurrentUserDisplayName());
                     return userRepository.save(newUser);
                 });
     }
