@@ -32,13 +32,15 @@ I/O error on GET request for "https://{supabase}.supabase.co/auth/v1/.well-known
 `NimbusJwtDecoder.withJwkSetUri().build()`는 내부적으로 Nimbus의 `RemoteJWKSet`을 사용한다.  
 캐시가 만료된 이후 Supabase JWKS 조회가 타임아웃되면 캐시된 키를 재사용하지 않고 예외를 던진다.
 
-**원인 2 — AuthenticationServiceException이 500으로 전파됨**
+**원인 2 — 타임아웃 시 `commence()`가 호출되지만 I/O 원인 감지에 실패해 401을 반환**
 
 흐름:
-1. `NimbusJwtDecoder.createJwt()` → I/O 오류 → `JwtDecoderInitializationException` (JwtException 하위)
+1. `NimbusJwtDecoder.createJwt()` → I/O 오류 → `JwtDecoderInitializationException` (`JwtException` 하위)
 2. `JwtAuthenticationProvider.authenticate()` → `JwtException` catch → `AuthenticationServiceException`으로 re-throw
-3. `BearerTokenAuthenticationFilter` → Spring Security 버전에 따라 `OAuth2AuthenticationException`만 catch하는 경우 존재
-4. 미처리된 예외가 서블릿까지 전파 → `GlobalExceptionHandler`의 generic `Exception` 핸들러 → **HTTP 500**
+3. `BearerTokenAuthenticationFilter` (Spring Security 7.0.3) → `AuthenticationException` 전체 catch → `authenticationFailureHandler.onAuthenticationFailure(...)` 호출 → `authenticationEntryPoint.commence(...)` 위임
+4. `LoggingAuthenticationEntryPoint.commence()` 진입은 되지만, I/O 오류 감지 로직이 없어 **단순 401**로만 응답
+
+> 500의 실제 원인은 필터 우회가 아니라, `commence()` 내 조건 부재 또는 타임아웃 중 클라이언트 연결 끊김 등 다른 경로일 가능성이 높다. 핵심 수정은 JWKS 캐시로 타임아웃 자체를 줄이는 것이다.
 
 ### 관련 파일
 
@@ -56,7 +58,6 @@ I/O error on GET request for "https://{supabase}.supabase.co/auth/v1/.well-known
 
 - `BaseSecurityConfig.jwtDecoder()` — Nimbus `JWKSourceBuilder` 기반으로 재구성 (캐시 + retry)
 - `LoggingAuthenticationEntryPoint.commence()` — `AuthenticationServiceException` + I/O 원인 감지 → 503 반환
-- `ProdSecurityConfig`, `DevelopSecurityConfig` — `oauth2ResourceServer`에 `authenticationEntryPoint` 명시
 
 ### Exclude
 
@@ -69,7 +70,7 @@ I/O error on GET request for "https://{supabase}.supabase.co/auth/v1/.well-known
 
 - 모든 파일은 UTF-8로 저장
 - 기존 클래스 구조 및 네이밍 유지
-- 변경 범위 최소화 — 수정 파일 4개, 신규 파일 없음
+- 변경 범위 최소화 — 수정 파일 2개, 신규 파일 없음
 - `issuerLocation` 방식(jwkSetUri가 없는 경우)은 기존 동작 유지
 
 ## 6. Naming Plan
@@ -84,9 +85,10 @@ I/O error on GET request for "https://{supabase}.supabase.co/auth/v1/.well-known
   - `com.nimbusds.jose.proc.SecurityContext`
   - `com.nimbusds.jwt.proc.DefaultJWTProcessor`
   - `java.net.URL`
-  - `java.time.Duration`
+  - (`java.time.Duration` 사용 안 함 — ms long 값 직접 사용)
   - `java.io.IOException` (LoggingAuthenticationEntryPoint)
   - `org.springframework.security.authentication.AuthenticationServiceException` (LoggingAuthenticationEntryPoint)
+- 추가하는 메서드: `hasCause(Throwable, Class<?>)` — LoggingAuthenticationEntryPoint 내 private static 헬퍼
 
 ## 7. Deliverables
 
@@ -98,9 +100,10 @@ I/O error on GET request for "https://{supabase}.supabase.co/auth/v1/.well-known
 if (StringUtils.hasText(jwkSetUri)) {
     JWKSource<SecurityContext> jwkSource = JWKSourceBuilder
             .create(new URL(jwkSetUri))
-            .cache(Duration.ofMinutes(15), Duration.ofMinutes(5))
-            .retrying(true)
-            .rateLimited(Duration.ofSeconds(30))
+            .cache(15 * 60 * 1000L, 5 * 60 * 1000L)  // TTL 15분, 갱신 타임아웃 5분 (ms)
+            .retrying(true)                             // 네트워크 오류 시 1회 재시도
+            .outageTolerant(true)                       // outage 시 stale 캐시 반환
+            .rateLimited(30 * 1000L)                    // 최소 30초 간격으로만 Supabase 호출 (ms)
             .build();
 
     DefaultJWTProcessor<SecurityContext> processor = new DefaultJWTProcessor<>();
@@ -114,9 +117,10 @@ if (StringUtils.hasText(jwkSetUri)) {
 }
 ```
 
-- `.cache(15분, 만료 5분 전 갱신)` — 캐시 TTL 설정
-- `.retrying(true)` — 갱신 실패 시 stale 캐시 재사용
-- `.rateLimited(30초)` — Supabase 과호출 방지
+- `.cache(long, long)` — TTL 15분, 갱신 타임아웃 5분 (ms 단위, `Duration` 아님)
+- `.retrying(true)` — 네트워크 오류 시 **1회 재시도** (stale 캐시 반환 아님)
+- `.outageTolerant(true)` — 재시도 포함 조회가 모두 실패할 때 **stale 캐시 반환** (타임아웃 핵심 fallback)
+- `.rateLimited(long)` — ms 단위로 최소 호출 간격 설정 (Supabase 과호출 방지)
 
 ### 수정 파일 2 — `LoggingAuthenticationEntryPoint.java`
 
@@ -124,7 +128,7 @@ if (StringUtils.hasText(jwkSetUri)) {
 
 ```java
 boolean isIoFailure = authException instanceof AuthenticationServiceException
-        && authException.getCause() instanceof IOException;
+        && hasCause(authException, IOException.class);
 
 if (isIoFailure) {
     log.error("JWKS 조회 실패 (Supabase 연결 오류). method={}, uri={}",
@@ -143,30 +147,36 @@ response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 ...
 ```
 
-> `SilentAuthenticationEntryPoint`는 `LoggingAuthenticationEntryPoint`를 상속하므로 별도 수정 불필요.
-
-### 수정 파일 3 — `ProdSecurityConfig.java`
-
-`oauth2ResourceServer` 설정에 `.authenticationEntryPoint(authenticationEntryPoint)` 추가.
+실제 예외 체인이 여러 단계로 감싸지기 때문에 직접 `getCause()` 대신 cause chain 전체를 순회하는 헬퍼 메서드를 추가한다.
 
 ```java
-.oauth2ResourceServer(oauth2 -> oauth2
-    .jwt(jwt -> jwt.decoder(jwtDecoder(securityProperties)))
-    .authenticationEntryPoint(authenticationEntryPoint)  // 추가
-)
+// AuthenticationServiceException
+//   └─ JwtDecoderInitializationException
+//        └─ RemoteKeySourceException
+//             └─ IOException  ← 실제 타임아웃 원인
+
+private static boolean hasCause(Throwable t, Class<?> type) {
+    for (Throwable c = t.getCause(); c != null; c = c.getCause()) {
+        if (type.isInstance(c)) return true;
+    }
+    return false;
+}
 ```
 
-### 수정 파일 4 — `DevelopSecurityConfig.java`
-
-`ProdSecurityConfig`와 동일하게 `.authenticationEntryPoint(authenticationEntryPoint)` 추가.
+> `SilentAuthenticationEntryPoint`는 `LoggingAuthenticationEntryPoint`를 상속하므로 별도 수정 불필요.
 
 ## 8. Checks Before Execution
 
 - [x] `JWKSourceBuilder`가 nimbus-jose-jwt에 존재하는지 — `spring-boot-starter-oauth2-resource-server` 의존성에 포함되어 있으므로 별도 추가 불필요
-- [x] `retrying(true)` 사용 시 nimbus-jose-jwt 최소 버전 확인 필요 — `JWKSourceBuilder`는 9.31+ 지원. Spring Boot 3.x 기본 포함 버전에서 사용 가능 (단, 빌드 오류 시 사용자에게 버전 확인 요청)
+- [x] nimbus-jose-jwt **10.4** API 시그니처 확인 완료
+  - `cache(long, long)` — ms 단위 (Duration 아님)
+  - `rateLimited(long)` — ms 단위 (Duration 아님)
+  - `retrying(boolean)` — 1회 재시도, stale 캐시 반환이 아님
+  - `outageTolerant(boolean)` — outage 시 stale 캐시 반환 (타임아웃 fallback 핵심)
+  - 추가 의존성 불필요
 - [x] `issuerLocation` 방식 변경 없음 — 기존 동작 보존
 - [x] `SilentAuthenticationEntryPoint`는 별도 수정 없이 부모 클래스 변경으로 반영됨
-- [x] `authenticationEntryPoint` 파라미터가 기존 메서드 시그니처에서 전달되는지 확인 — `applyCommon()`을 통해 전달됨
+- [x] `ProdSecurityConfig`, `DevelopSecurityConfig`에 `authenticationEntryPoint` 이미 설정됨 — 수정 불필요 (코드 확인 완료)
 
 ## 9. Final Prompt Draft
 
@@ -183,13 +193,13 @@ response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 - JWKS 캐시 + fallback 전략으로 타임아웃 빈도를 낮추고, 발생 시 503으로 응답한다.
 
 배경:
-- NimbusJwtDecoder가 JWKS 캐시 만료 시 Supabase 조회를 재시도하다 타임아웃 → AuthenticationServiceException → 500 전파
+- NimbusJwtDecoder가 JWKS 캐시 만료 시 Supabase 조회 타임아웃 → AuthenticationServiceException → commence() 호출되나 적절한 응답 처리 부재
+- JWKSourceBuilder: cache/rateLimited는 ms long 값 사용, retrying은 1회 재시도, outageTolerant가 stale 캐시 fallback
 - 상세 분석은 `prompts/tasks/08-draft-dev-jwks-timeout-fix.md` 참고
 
 포함 범위:
 - `BaseSecurityConfig.jwtDecoder()` — JWKSourceBuilder 기반 캐시 + retry 적용
-- `LoggingAuthenticationEntryPoint.commence()` — I/O 원인 감지 시 503 반환
-- `ProdSecurityConfig`, `DevelopSecurityConfig` — oauth2ResourceServer에 authenticationEntryPoint 명시
+- `LoggingAuthenticationEntryPoint.commence()` — I/O cause chain 감지 시 503 반환, hasCause() 헬퍼 추가
 
 제외 범위:
 - 새 파일 생성 없음
