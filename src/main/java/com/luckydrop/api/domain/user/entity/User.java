@@ -43,5 +43,6 @@ public class User {
 
     public void delete() {
         this.deletedAt = OffsetDateTime.now();
+        this.authId = null; // 외래키 종속 제거
     }
 }
