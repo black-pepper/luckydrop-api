@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class CurrentUserService {
@@ -18,15 +20,20 @@ public class CurrentUserService {
     private final CurrentUserAuthIdProvider currentUserAuthIdProvider;
     private final UserRepository userRepository;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public CurrentUser getCurrentUser() {
         return CurrentUser.from(getCurrentUserEntity());
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public User getCurrentUserEntity() {
-        return userRepository.findByAuthIdAndDeletedAtIsNull(currentUserAuthIdProvider.getCurrentAuthId())
-                .orElseThrow(() -> new DrawEventException(ErrorCode.USER_NOT_FOUND));
+        UUID authId = currentUserAuthIdProvider.getCurrentAuthId();
+        return userRepository.findByAuthIdAndDeletedAtIsNull(authId)
+                .orElseGet(() -> {
+                    User newUser = new User();
+                    newUser.setAuthId(authId);
+                    return userRepository.save(newUser);
+                });
     }
 
     @Transactional
