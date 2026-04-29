@@ -10,7 +10,6 @@ import com.luckydrop.api.domain.drawresult.dto.DrawResponse;
 import com.luckydrop.api.domain.drawresult.entity.DrawResult;
 import com.luckydrop.api.domain.drawresult.repository.DrawResultRepository;
 import com.luckydrop.api.domain.reward.entity.Reward;
-import com.luckydrop.api.domain.reward.repository.RewardRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 @Slf4j
 @Service
@@ -27,8 +25,8 @@ import java.util.Set;
 public class DrawService {
 
     private final InvitationCodeRepository invitationCodeRepository;
-    private final RewardRepository rewardRepository;
     private final DrawResultRepository drawResultRepository;
+    private final DrawAvailabilityService drawAvailabilityService;
     private final Random random = new Random();
 
     @Transactional
@@ -41,11 +39,7 @@ public class DrawService {
 
         validateInvitationCode(invitationCode);
 
-        Set<Long> drawnRewardIds = drawResultRepository.findRewardIdsByDrawCodeId(invitationCode.getId());
-        List<Reward> availableRewards = rewardRepository.findAllAvailableByContentIdWithLock(invitationCode.getContent().getId())
-                .stream()
-                .filter(reward -> reward.isDuplicateAllowed() || !drawnRewardIds.contains(reward.getId()))
-                .toList();
+        List<Reward> availableRewards = drawAvailabilityService.findAvailableRewards(invitationCode, true);
 
         if (availableRewards.isEmpty()) {
             throw new DrawEventException(ErrorCode.NO_AVAILABLE_REWARD);

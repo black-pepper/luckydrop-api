@@ -11,7 +11,6 @@ import com.luckydrop.api.domain.drawresult.dto.DrawResponse;
 import com.luckydrop.api.domain.drawresult.entity.DrawResult;
 import com.luckydrop.api.domain.drawresult.repository.DrawResultRepository;
 import com.luckydrop.api.domain.reward.entity.Reward;
-import com.luckydrop.api.domain.reward.repository.RewardRepository;
 import com.luckydrop.api.domain.user.entity.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +23,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -38,10 +36,10 @@ class DrawServiceTest {
     private InvitationCodeRepository invitationCodeRepository;
 
     @Mock
-    private RewardRepository rewardRepository;
+    private DrawResultRepository drawResultRepository;
 
     @Mock
-    private DrawResultRepository drawResultRepository;
+    private DrawAvailabilityService drawAvailabilityService;
 
     @InjectMocks
     private DrawService drawService;
@@ -55,8 +53,7 @@ class DrawServiceTest {
 
         when(invitationCodeRepository.findByContentCodeAndCodeWithLock("CONTENT-001", "INVITE-001"))
                 .thenReturn(Optional.of(invitationCode));
-        when(drawResultRepository.findRewardIdsByDrawCodeId(1L)).thenReturn(Set.of());
-        when(rewardRepository.findAllAvailableByContentIdWithLock(10L)).thenReturn(List.of(reward));
+        when(drawAvailabilityService.findAvailableRewards(invitationCode, true)).thenReturn(List.of(reward));
         when(drawResultRepository.findNextDrawNo(1L)).thenReturn(1);
 
         DrawResponse response = drawService.draw(request);
