@@ -46,7 +46,7 @@ class CodeServiceTest {
 
         CodeVerifyResponse response = codeService.verifyCode("CONTENT-001", "INVITE-001");
 
-        assertThat(response.getMaskedName()).isEqualTo("INVITE-001");
+        assertThat(response.getName()).isEqualTo("INVITE-001");
         assertThat(response.getRemainingCount()).isEqualTo(3);
         assertThat(response.isCanDraw()).isTrue();
         assertThat(response.getDrawStatus()).isEqualTo(DrawStatus.DRAWABLE);
