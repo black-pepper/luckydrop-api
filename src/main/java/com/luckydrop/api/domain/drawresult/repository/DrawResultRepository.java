@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Set;
 
-public interface DrawResultRepository extends JpaRepository<DrawResult, Long> {
+public interface DrawResultRepository extends JpaRepository<DrawResult, Long>, DrawResultRepositoryCustom {
 
     @Query("""
         SELECT dr

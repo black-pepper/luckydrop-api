@@ -4,16 +4,17 @@ import com.luckydrop.api.common.exception.DrawEventException;
 import com.luckydrop.api.common.exception.ErrorCode;
 import com.luckydrop.api.domain.content.entity.Content;
 import com.luckydrop.api.domain.content.repository.ContentRepository;
+import com.luckydrop.api.domain.drawresult.dto.ManagerDrawResultSearchCondition;
 import com.luckydrop.api.domain.drawresult.dto.ManagerDrawResultResponse;
 import com.luckydrop.api.domain.drawresult.dto.DrawResultDeliveryUpdateRequest;
 import com.luckydrop.api.domain.drawresult.entity.DrawResult;
 import com.luckydrop.api.domain.drawresult.repository.DrawResultRepository;
 import com.luckydrop.api.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,13 +25,15 @@ public class ManagerDrawResultService {
     private final CurrentUserService currentUserService;
 
     @Transactional(readOnly = true)
-    public List<ManagerDrawResultResponse> getManagerDrawResults(String contentCode) {
+    public Page<ManagerDrawResultResponse> getManagerDrawResults(
+            String contentCode,
+            ManagerDrawResultSearchCondition condition,
+            Pageable pageable
+    ) {
         getOwnedActiveContent(contentCode);
 
-        return drawResultRepository.findAllByContentCodeOrderByDrawnAtDesc(contentCode)
-                .stream()
-                .map(ManagerDrawResultResponse::new)
-                .toList();
+        return drawResultRepository.searchManagerDrawResults(contentCode, condition, pageable)
+                .map(ManagerDrawResultResponse::new);
     }
 
     @Transactional

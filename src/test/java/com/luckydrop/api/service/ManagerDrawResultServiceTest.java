@@ -7,6 +7,7 @@ import com.luckydrop.api.domain.content.entity.ContentType;
 import com.luckydrop.api.domain.content.repository.ContentRepository;
 import com.luckydrop.api.domain.drawresult.dto.ManagerDrawResultResponse;
 import com.luckydrop.api.domain.drawresult.dto.DrawResultDeliveryUpdateRequest;
+import com.luckydrop.api.domain.drawresult.dto.ManagerDrawResultSearchCondition;
 import com.luckydrop.api.domain.drawresult.entity.DrawResult;
 import com.luckydrop.api.domain.drawresult.repository.DrawResultRepository;
 import com.luckydrop.api.domain.invitationcode.entity.InvitationCode;
@@ -17,6 +18,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.OffsetDateTime;
@@ -48,19 +52,22 @@ class ManagerDrawResultServiceTest {
         Content content = createContent("CONTENT-001", owner);
         InvitationCode invitationCode = createInvitationCode("INVITE-001", "참가자A", content);
         DrawResult drawResult = createDrawResult(10L, content, invitationCode, false);
+        ManagerDrawResultSearchCondition condition = new ManagerDrawResultSearchCondition();
+        PageRequest pageable = PageRequest.of(0, 20);
 
         when(currentUserService.getCurrentUserEntity()).thenReturn(owner);
         when(contentRepository.findByCodeWithUser("CONTENT-001")).thenReturn(Optional.of(content));
-        when(drawResultRepository.findAllByContentCodeOrderByDrawnAtDesc("CONTENT-001"))
-                .thenReturn(List.of(drawResult));
+        when(drawResultRepository.searchManagerDrawResults("CONTENT-001", condition, pageable))
+                .thenReturn(new PageImpl<>(List.of(drawResult), pageable, 1));
 
-        List<ManagerDrawResultResponse> results = managerDrawResultService.getManagerDrawResults("CONTENT-001");
+        Page<ManagerDrawResultResponse> results = managerDrawResultService.getManagerDrawResults("CONTENT-001", condition, pageable);
 
-        assertThat(results).hasSize(1);
-        assertThat(results.getFirst().getDrawResultId()).isEqualTo(10L);
-        assertThat(results.getFirst().getInvitationCode()).isEqualTo("INVITE-001");
-        assertThat(results.getFirst().getInvitationCodeName()).isEqualTo("참가자A");
-        assertThat(results.getFirst().isDelivered()).isFalse();
+        assertThat(results.getContent()).hasSize(1);
+        assertThat(results.getTotalElements()).isEqualTo(1);
+        assertThat(results.getContent().getFirst().getDrawResultId()).isEqualTo(10L);
+        assertThat(results.getContent().getFirst().getInvitationCode()).isEqualTo("INVITE-001");
+        assertThat(results.getContent().getFirst().getInvitationCodeName()).isEqualTo("참가자A");
+        assertThat(results.getContent().getFirst().isDelivered()).isFalse();
     }
 
     @Test
@@ -68,11 +75,13 @@ class ManagerDrawResultServiceTest {
         User currentUser = createUser(1L);
         User otherUser = createUser(2L);
         Content otherContent = createContent("CONTENT-002", otherUser);
+        ManagerDrawResultSearchCondition condition = new ManagerDrawResultSearchCondition();
+        PageRequest pageable = PageRequest.of(0, 20);
 
         when(currentUserService.getCurrentUserEntity()).thenReturn(currentUser);
         when(contentRepository.findByCodeWithUser("CONTENT-002")).thenReturn(Optional.of(otherContent));
 
-        assertThatThrownBy(() -> managerDrawResultService.getManagerDrawResults("CONTENT-002"))
+        assertThatThrownBy(() -> managerDrawResultService.getManagerDrawResults("CONTENT-002", condition, pageable))
                 .isInstanceOf(DrawEventException.class)
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.CONTENT_NOT_FOUND);
