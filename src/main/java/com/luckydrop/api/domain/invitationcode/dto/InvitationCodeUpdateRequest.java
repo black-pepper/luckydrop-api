@@ -1,7 +1,7 @@
 package com.luckydrop.api.domain.invitationcode.dto;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -14,7 +14,7 @@ public class InvitationCodeUpdateRequest {
     private String name;
 
     @NotNull(message = "허용 추첨 횟수를 입력해 주세요.")
-    @Positive(message = "허용 추첨 횟수는 1 이상이어야 합니다.")
+    @PositiveOrZero(message = "허용 추첨 횟수는 0 이상이어야 합니다.")
     private Integer allowedDrawCount;
 
     private OffsetDateTime expiresAt;

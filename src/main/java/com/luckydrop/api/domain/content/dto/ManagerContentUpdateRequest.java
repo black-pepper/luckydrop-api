@@ -18,7 +18,6 @@ public class ManagerContentUpdateRequest {
     @NotBlank(message = "콘텐츠 제목을 입력해주세요.")
     private String title;
 
-    @NotBlank(message = "콘텐츠 설명을 입력해주세요.")
     private String description;
 
     private OffsetDateTime startAt;
