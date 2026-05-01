@@ -1,0 +1,32 @@
+spring:
+  config:
+    activate:
+      on-profile: develop
+
+logging:
+  level:
+    com.luckydrop.api: DEBUG
+
+app:
+  security:
+    cors:
+      allowed-origins:
+        - ${APP_CORS_ALLOWED_ORIGIN:https://luckydrop-dev.pages.dev}
+        - https://zany-barnacle-pwp7vgv4q452qpv-8080.app.github.dev
+        - http://localhost:8080
+        - http://localhost:8081
+    jwt:
+      issuer-uri: ${SUPABASE_ISSUER_URI}
+      jwk-set-uri: ${SUPABASE_JWK_SET_URI:${SUPABASE_ISSUER_URI}/.well-known/jwks.json}
+      audience: ${SUPABASE_JWT_AUDIENCE:authenticated}
+    supabase:
+      admin-api-url: ${SUPABASE_ISSUER_URI}
+      service-role-key: ${SUPABASE_SERVICE_ROLE_KEY}
+    public-paths:
+      - /error
+      - /api/draw/**
+      - /actuator/health
+      - /actuator/info
+      - /swagger-ui/**
+      - /v3/api-docs/**
+      - /inquiries

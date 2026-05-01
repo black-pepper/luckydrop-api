@@ -2,14 +2,14 @@ package com.luckydrop.api.service;
 
 import com.luckydrop.api.common.exception.DrawEventException;
 import com.luckydrop.api.common.exception.ErrorCode;
-import com.luckydrop.api.domain.drawcode.entity.DrawCode;
-import com.luckydrop.api.domain.drawcode.repository.DrawCodeRepository;
+import com.luckydrop.api.domain.content.entity.Content;
+import com.luckydrop.api.domain.invitationcode.entity.InvitationCode;
+import com.luckydrop.api.domain.invitationcode.repository.InvitationCodeRepository;
 import com.luckydrop.api.domain.drawresult.dto.DrawRequest;
 import com.luckydrop.api.domain.drawresult.dto.DrawResponse;
 import com.luckydrop.api.domain.drawresult.entity.DrawResult;
 import com.luckydrop.api.domain.drawresult.repository.DrawResultRepository;
 import com.luckydrop.api.domain.reward.entity.Reward;
-import com.luckydrop.api.domain.reward.repository.RewardRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,62 +23,53 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class DrawService {
 
-    private final DrawCodeRepository drawCodeRepository;
-    private final RewardRepository rewardRepository;
+    private final InvitationCodeRepository invitationCodeRepository;
     private final DrawResultRepository drawResultRepository;
+    private final DrawAvailabilityService drawAvailabilityService;
     private final Random random = new Random();
 
-    /**
-     * 뽑기 실행
-     * 동시성: DrawCode + Reward 모두 PESSIMISTIC_WRITE 락
-     * 트랜잭션: draw_result 저장 + remaining_count 차감 + stock 차감 원자 처리
-     */
     @Transactional
     public DrawResponse draw(DrawRequest request) {
-        // 1. 코드 비관적 락 조회
-        DrawCode drawCode = drawCodeRepository.findByCodeWithLock(request.getCode())
+        InvitationCode invitationCode = invitationCodeRepository.findByContentCodeAndCodeWithLock(
+                        request.getContentCode(),
+                        request.getInvitationCode()
+                )
                 .orElseThrow(() -> new DrawEventException(ErrorCode.CODE_NOT_FOUND));
 
-        // 2. 유효성 검증
-        validateDrawCode(drawCode);
+        validateInvitationCode(invitationCode);
 
-        // 3. 보상 목록 비관적 락 조회
-        List<Reward> availableRewards = rewardRepository.findAllAvailableWithLock();
+        List<Reward> availableRewards = drawAvailabilityService.findAvailableRewards(invitationCode, true);
+
         if (availableRewards.isEmpty()) {
             throw new DrawEventException(ErrorCode.NO_AVAILABLE_REWARD);
         }
 
-        // 4. weight 기반 보상 선택
         Reward selectedReward = selectRewardByWeight(availableRewards);
-
-        // 5. 재고 차감
         selectedReward.decreaseStock();
 
-        // 6. draw_no 계산
-        int drawNo = drawResultRepository.findNextDrawNo(drawCode.getId());
+        int drawNo = drawResultRepository.findNextDrawNo(invitationCode.getId());
 
-        // 7. 결과 저장
         DrawResult result = DrawResult.builder()
-                .drawCode(drawCode)
-                .participant(drawCode.getParticipant())
+                .invitationCode(invitationCode)
+                .content(invitationCode.getContent())
                 .reward(selectedReward)
-                .rewardNameSnapshot(selectedReward.getName())
                 .drawNo(drawNo)
                 .build();
         drawResultRepository.save(result);
 
-        // 8. 남은 횟수 차감
-        drawCode.use();
+        invitationCode.use();
 
-        log.info("뽑기 완료 - code: {}, reward: {}, drawNo: {}", request.getCode(), selectedReward.getName(), drawNo);
+        log.info(
+                "Draw completed - contentCode: {}, invitationCode: {}, reward: {}, drawNo: {}",
+                request.getContentCode(),
+                request.getInvitationCode(),
+                selectedReward.getName(),
+                drawNo
+        );
 
-        return new DrawResponse(result, drawCode.getRemainingCount());
+        return new DrawResponse(result, invitationCode.getRemainingCount());
     }
 
-    /**
-     * weight 기반 상대 확률 선택
-     * 예) A(5), B(3), C(2) → 총합 10 → 0~4:A, 5~7:B, 8~9:C
-     */
     private Reward selectRewardByWeight(List<Reward> rewards) {
         int totalWeight = rewards.stream().mapToInt(Reward::getWeight).sum();
         int pick = random.nextInt(totalWeight);
@@ -92,18 +83,28 @@ public class DrawService {
         return rewards.get(rewards.size() - 1);
     }
 
-    private void validateDrawCode(DrawCode drawCode) {
-        if (!drawCode.isActive()) {
+    private void validateInvitationCode(InvitationCode invitationCode) {
+        if (!invitationCode.isActive()) {
             throw new DrawEventException(ErrorCode.CODE_INACTIVE);
         }
-        if (drawCode.getParticipant().isInactive()) {
-            throw new DrawEventException(ErrorCode.PARTICIPANT_INACTIVE);
-        }
-        if (drawCode.isExpired()) {
+        if (invitationCode.isExpired()) {
             throw new DrawEventException(ErrorCode.CODE_EXPIRED);
         }
-        if (drawCode.hasNoRemaining()) {
+        if (invitationCode.getContent().isDeleted()) {
+            throw new DrawEventException(ErrorCode.CODE_INACTIVE);
+        }
+        if (invitationCode.hasNoRemaining()) {
             throw new DrawEventException(ErrorCode.CODE_NO_REMAINING);
+        }
+        validateContentPeriod(invitationCode.getContent());
+    }
+
+    private void validateContentPeriod(Content content) {
+        if (content.isNotStartedYet()) {
+            throw new DrawEventException(ErrorCode.CONTENT_NOT_STARTED);
+        }
+        if (content.isAlreadyEnded()) {
+            throw new DrawEventException(ErrorCode.CONTENT_EXPIRED);
         }
     }
 }

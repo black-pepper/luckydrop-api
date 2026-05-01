@@ -2,8 +2,8 @@ package com.luckydrop.api.service;
 
 import com.luckydrop.api.common.exception.DrawEventException;
 import com.luckydrop.api.common.exception.ErrorCode;
-import com.luckydrop.api.domain.drawcode.entity.DrawCode;
-import com.luckydrop.api.domain.drawcode.repository.DrawCodeRepository;
+import com.luckydrop.api.domain.invitationcode.entity.InvitationCode;
+import com.luckydrop.api.domain.invitationcode.repository.InvitationCodeRepository;
 import com.luckydrop.api.domain.drawresult.dto.DrawResultResponse;
 import com.luckydrop.api.domain.drawresult.repository.DrawResultRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,25 +17,14 @@ import java.util.List;
 public class ResultService {
 
     private final DrawResultRepository drawResultRepository;
-    private final DrawCodeRepository drawCodeRepository;
+    private final InvitationCodeRepository invitationCodeRepository;
 
     @Transactional(readOnly = true)
-    public List<DrawResultResponse> getResultsByCode(String code) {
-        DrawCode drawCode = drawCodeRepository.findByCodeWithParticipant(code)
+    public List<DrawResultResponse> getResultsByCode(String contentCode, String invitationCode) {
+        InvitationCode code = invitationCodeRepository.findByContentCodeAndCodeWithContent(contentCode, invitationCode)
                 .orElseThrow(() -> new DrawEventException(ErrorCode.CODE_NOT_FOUND));
 
-        return drawResultRepository.findByDrawCodeIdOrderByDrawnAtDesc(drawCode.getId())
-                .stream()
-                .map(DrawResultResponse::new)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<DrawResultResponse> getResultsByParticipant(String code) {
-        DrawCode drawCode = drawCodeRepository.findByCodeWithParticipant(code)
-                .orElseThrow(() -> new DrawEventException(ErrorCode.CODE_NOT_FOUND));
-
-        return drawResultRepository.findByParticipantIdOrderByDrawnAtDesc(drawCode.getParticipant().getId())
+        return drawResultRepository.findByDrawCodeIdOrderByDrawnAtDesc(code.getId())
                 .stream()
                 .map(DrawResultResponse::new)
                 .toList();

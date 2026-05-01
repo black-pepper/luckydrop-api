@@ -3,7 +3,7 @@ package com.luckydrop.api.domain.drawresult.dto;
 import com.luckydrop.api.domain.drawresult.entity.DrawResult;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Getter
 public class DrawResultResponse {
@@ -12,13 +12,15 @@ public class DrawResultResponse {
     private final String rewardName;
     private final String rewardImageUrl;
     private final int drawNo;
-    private final LocalDateTime drawnAt;
+    private final OffsetDateTime drawnAt;
+    private final boolean delivered;
 
     public DrawResultResponse(DrawResult result) {
         this.drawResultId = result.getId();
-        this.rewardName = result.getRewardNameSnapshot();
+        this.rewardName = result.getReward().getName();
         this.rewardImageUrl = result.getReward().getImage();
         this.drawNo = result.getDrawNo();
         this.drawnAt = result.getDrawnAt();
+        this.delivered = result.isDelivered();
     }
 }

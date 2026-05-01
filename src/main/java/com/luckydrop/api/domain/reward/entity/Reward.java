@@ -1,17 +1,30 @@
 package com.luckydrop.api.domain.reward.entity;
 
-import jakarta.persistence.*;
+import com.luckydrop.api.common.exception.DrawEventException;
+import com.luckydrop.api.common.exception.ErrorCode;
+import com.luckydrop.api.domain.content.entity.Content;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "reward")
+@Table(name = "rewards")
 @Getter
 @NoArgsConstructor
+@SQLRestriction("deleted_at IS NULL")
 public class Reward {
 
     @Id
@@ -36,22 +49,83 @@ public class Reward {
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
 
+    @Column(name = "allow_duplicate_reward")
+    private Boolean allowDuplicateReward = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "content_id", nullable = false)
+    private Content content;
+
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private OffsetDateTime deletedAt;
+
+    public Reward(
+            String name,
+            String description,
+            int weight,
+            Integer stock,
+            String image,
+            Boolean allowDuplicateReward,
+            Content content
+    ) {
+        this.name = name;
+        this.description = description;
+        this.weight = weight;
+        this.stock = stock;
+        this.image = image;
+        this.active = true;
+        this.allowDuplicateReward = allowDuplicateReward != null ? allowDuplicateReward : true;
+        this.content = content;
+    }
 
     public boolean isUnlimitedStock() {
         return this.stock == null;
     }
 
+    public boolean isActive() {
+        return active;
+    }
+
+    public boolean isDuplicateAllowed() {
+        return Boolean.TRUE.equals(this.allowDuplicateReward);
+    }
+
+    public void update(
+            String name,
+            String description,
+            int weight,
+            Integer stock,
+            String image,
+            Boolean allowDuplicateReward
+    ) {
+        this.name = name;
+        this.description = description;
+        this.weight = weight;
+        this.stock = stock;
+        this.image = image;
+        this.allowDuplicateReward = allowDuplicateReward != null ? allowDuplicateReward : true;
+    }
+
+    public void delete() {
+        this.deletedAt = OffsetDateTime.now();
+    }
+
+    public boolean isDeleted() {
+        return deletedAt != null;
+    }
+
     public void decreaseStock() {
         if (this.stock != null) {
             if (this.stock <= 0) {
-                throw new IllegalStateException("재고가 없습니다.");
+                throw new DrawEventException(ErrorCode.REWARD_OUT_OF_STOCK);
             }
             this.stock--;
         }
