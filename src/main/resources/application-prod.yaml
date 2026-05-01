@@ -30,3 +30,4 @@ app:
       - /api/draw/**
       - /actuator/health
       - /actuator/info
+      - /inquiries
