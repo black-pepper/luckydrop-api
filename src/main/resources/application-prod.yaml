@@ -11,6 +11,7 @@ springdoc:
 
 logging:
   level:
+    root: WARN
     com.luckydrop.api: INFO
 
 app:
