@@ -8,9 +8,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@ValidRewardMode
 @Getter
 @NoArgsConstructor
-public class RewardCreateRequest {
+public class RewardCreateRequest implements RewardModeValidatable {
 
     @NotBlank(message = "콘텐츠 코드를 입력해 주세요.")
     private String contentCode;
@@ -21,9 +22,11 @@ public class RewardCreateRequest {
 
     private String description;
 
-    @NotNull(message = "가중치를 입력해 주세요.")
     @Positive(message = "가중치는 1 이상이어야 합니다.")
     private Integer weight;
+
+    @Positive(message = "풀 개수는 1 이상이어야 합니다.")
+    private Integer poolCount;
 
     @PositiveOrZero(message = "재고는 0 이상이어야 합니다.")
     private Integer stock;

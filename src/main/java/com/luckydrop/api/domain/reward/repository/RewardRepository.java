@@ -37,6 +37,7 @@ public interface RewardRepository extends JpaRepository<Reward, Long> {
         WHERE r.content.id = :contentId
           AND r.active = true
           AND (r.stock IS NULL OR r.stock > 0)
+          AND (r.poolCount IS NULL OR r.poolCount > 0)
         ORDER BY r.id
         """)
     List<Reward> findAllAvailableByContentId(@Param("contentId") Long contentId);
@@ -48,6 +49,7 @@ public interface RewardRepository extends JpaRepository<Reward, Long> {
         WHERE r.content.id = :contentId
           AND r.active = true
           AND (r.stock IS NULL OR r.stock > 0)
+          AND (r.poolCount IS NULL OR r.poolCount > 0)
         ORDER BY r.id
         """)
     List<Reward> findAllAvailableByContentIdWithLock(@Param("contentId") Long contentId);

@@ -44,8 +44,12 @@ public class DrawService {
             throw new DrawEventException(ErrorCode.NO_AVAILABLE_REWARD);
         }
 
-        Reward selectedReward = selectRewardByWeight(availableRewards);
-        selectedReward.decreaseStock();
+        Reward selectedReward = selectReward(availableRewards);
+        if (selectedReward.isLotteryMode()) {
+            selectedReward.decreasePoolCount();
+        } else {
+            selectedReward.decreaseStock();
+        }
 
         int drawNo = drawResultRepository.findNextDrawNo(invitationCode.getId());
 
@@ -70,12 +74,12 @@ public class DrawService {
         return new DrawResponse(result, invitationCode.getRemainingCount());
     }
 
-    private Reward selectRewardByWeight(List<Reward> rewards) {
-        int totalWeight = rewards.stream().mapToInt(Reward::getWeight).sum();
+    private Reward selectReward(List<Reward> rewards) {
+        int totalWeight = rewards.stream().mapToInt(Reward::getEffectiveWeight).sum();
         int pick = random.nextInt(totalWeight);
         int cumulative = 0;
         for (Reward reward : rewards) {
-            cumulative += reward.getWeight();
+            cumulative += reward.getEffectiveWeight();
             if (pick < cumulative) {
                 return reward;
             }

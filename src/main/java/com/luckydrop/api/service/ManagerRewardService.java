@@ -44,6 +44,7 @@ public class ManagerRewardService {
                 request.getName(),
                 request.getDescription(),
                 request.getWeight(),
+                request.getPoolCount(),
                 request.getStock(),
                 request.getImageUrl(),
                 request.getAllowDuplicateReward(),
@@ -59,6 +60,7 @@ public class ManagerRewardService {
                 request.getName(),
                 request.getDescription(),
                 request.getWeight(),
+                request.getPoolCount(),
                 request.getStock(),
                 request.getImageUrl(),
                 request.getAllowDuplicateReward()
