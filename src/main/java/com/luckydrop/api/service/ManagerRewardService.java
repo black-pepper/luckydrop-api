@@ -5,6 +5,7 @@ import com.luckydrop.api.common.exception.ErrorCode;
 import com.luckydrop.api.domain.content.entity.Content;
 import com.luckydrop.api.domain.content.repository.ContentRepository;
 import com.luckydrop.api.domain.reward.dto.ManagerRewardResponse;
+import com.luckydrop.api.domain.reward.dto.RewardBatchCreateRequest;
 import com.luckydrop.api.domain.reward.dto.RewardCreateRequest;
 import com.luckydrop.api.domain.reward.dto.RewardUpdateRequest;
 import com.luckydrop.api.domain.reward.entity.Reward;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -40,17 +42,7 @@ public class ManagerRewardService {
     @Transactional
     public ManagerRewardResponse createReward(RewardCreateRequest request) {
         Content content = getOwnedContent(request.getContentCode());
-        Reward reward = new Reward(
-                request.getName(),
-                request.getDescription(),
-                request.getWeight(),
-                request.getPoolCount(),
-                request.getStock(),
-                request.getImageUrl(),
-                request.getAllowDuplicateReward(),
-                content
-        );
-        return new ManagerRewardResponse(rewardRepository.save(reward));
+        return new ManagerRewardResponse(rewardRepository.save(buildReward(request, content)));
     }
 
     @Transactional
@@ -69,9 +61,39 @@ public class ManagerRewardService {
     }
 
     @Transactional
+    public List<ManagerRewardResponse> createRewards(RewardBatchCreateRequest request) {
+        Content content = getOwnedContent(request.getContentCode());
+        List<Reward> rewards = request.getRewards().stream()
+                .map(item -> buildReward(item, content))
+                .toList();
+        return rewardRepository.saveAll(rewards).stream()
+                .map(ManagerRewardResponse::new)
+                .toList();
+    }
+
+    @Transactional
+    public void deleteAllRewardsByContent(String contentCode) {
+        Content content = getOwnedContent(contentCode);
+        rewardRepository.softDeleteAllByContentId(content.getId(), OffsetDateTime.now());
+    }
+
+    @Transactional
     public void deleteReward(Long rewardId) {
         Reward reward = getOwnedReward(rewardId);
         reward.delete();
+    }
+
+    private Reward buildReward(RewardUpdateRequest item, Content content) {
+        return new Reward(
+                item.getName(),
+                item.getDescription(),
+                item.getWeight(),
+                item.getPoolCount(),
+                item.getStock(),
+                item.getImageUrl(),
+                item.getAllowDuplicateReward(),
+                content
+        );
     }
 
     private Content getOwnedContent(String contentCode) {
