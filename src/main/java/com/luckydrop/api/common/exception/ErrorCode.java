@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증 정보가 없습니다."),
+    TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 인증 정보에 매핑된 사용자를 찾을 수 없습니다."),
     USER_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "이미 탈퇴한 사용자입니다."),
     CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 콘텐츠입니다."),
