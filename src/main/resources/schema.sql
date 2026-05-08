@@ -49,7 +49,8 @@ create table public.rewards (
   id bigserial not null,
   name character varying(200) not null,
   description text null,
-  weight integer not null default 1,
+  weight integer null,
+  pool_count integer null,
   stock integer null,
   image character varying(500) null,
   is_active boolean not null default true,
@@ -57,10 +58,16 @@ create table public.rewards (
   updated_at timestamp with time zone not null default now(),
   allow_duplicate_reward boolean null default true,
   content_id bigint not null,
+  deleted_at timestamp with time zone null,
   constraint rewards_pkey primary key (id),
   constraint rewards_content_id_fkey foreign key (content_id) references public.contents (id),
   constraint rewards_stock_check check (stock is null or stock >= 0),
-  constraint rewards_weight_check check (weight > 0)
+  constraint rewards_weight_check check (weight is null or weight > 0),
+  constraint rewards_pool_count_check check (pool_count is null or pool_count >= 0),
+  constraint rewards_draw_mode_check check (
+    (weight is not null and pool_count is null) or
+    (weight is null and pool_count is not null)
+  )
 );
 
 create table public.draw_results (

@@ -11,7 +11,10 @@ import lombok.NoArgsConstructor;
 @ValidRewardMode
 @Getter
 @NoArgsConstructor
-public class RewardUpdateRequest implements RewardModeValidatable {
+public class RewardBatchUpdateItem implements RewardModeValidatable {
+
+    @NotNull(message = "보상 ID를 입력해 주세요.")
+    private Long rewardId;
 
     @NotBlank(message = "보상 이름을 입력해 주세요.")
     @Size(max = 200, message = "보상 이름은 200자 이하여야 합니다.")

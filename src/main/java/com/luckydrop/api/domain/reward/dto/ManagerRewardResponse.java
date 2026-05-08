@@ -12,7 +12,8 @@ public class ManagerRewardResponse {
     private final String contentCode;
     private final String name;
     private final String description;
-    private final int weight;
+    private final Integer weight;
+    private final Integer poolCount;
     private final Integer stock;
     private final boolean unlimited;
     private final String imageUrl;
@@ -27,6 +28,7 @@ public class ManagerRewardResponse {
         this.name = reward.getName();
         this.description = reward.getDescription();
         this.weight = reward.getWeight();
+        this.poolCount = reward.getPoolCount();
         this.stock = reward.getStock();
         this.unlimited = reward.isUnlimitedStock();
         this.imageUrl = reward.getImage();
