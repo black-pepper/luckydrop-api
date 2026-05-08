@@ -3,6 +3,7 @@ package com.luckydrop.api.controller;
 import com.luckydrop.api.common.response.ApiResponse;
 import com.luckydrop.api.domain.reward.dto.ManagerRewardResponse;
 import com.luckydrop.api.domain.reward.dto.RewardBatchCreateRequest;
+import com.luckydrop.api.domain.reward.dto.RewardBatchUpdateRequest;
 import com.luckydrop.api.domain.reward.dto.RewardCreateRequest;
 import com.luckydrop.api.domain.reward.dto.RewardUpdateRequest;
 import com.luckydrop.api.service.ManagerRewardService;
@@ -56,6 +57,12 @@ public class ManagerRewardController {
             @PathVariable Long rewardId,
             @RequestBody @Valid RewardUpdateRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(managerRewardService.updateReward(rewardId, request)));
+    }
+
+    @PutMapping("/batch")
+    public ResponseEntity<ApiResponse<List<ManagerRewardResponse>>> updateRewards(
+            @RequestBody @Valid RewardBatchUpdateRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(managerRewardService.updateRewards(request)));
     }
 
     @PostMapping("/batch")

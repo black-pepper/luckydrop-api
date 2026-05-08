@@ -6,6 +6,7 @@ import com.luckydrop.api.domain.content.entity.Content;
 import com.luckydrop.api.domain.content.repository.ContentRepository;
 import com.luckydrop.api.domain.reward.dto.ManagerRewardResponse;
 import com.luckydrop.api.domain.reward.dto.RewardBatchCreateRequest;
+import com.luckydrop.api.domain.reward.dto.RewardBatchUpdateRequest;
 import com.luckydrop.api.domain.reward.dto.RewardCreateRequest;
 import com.luckydrop.api.domain.reward.dto.RewardUpdateRequest;
 import com.luckydrop.api.domain.reward.entity.Reward;
@@ -58,6 +59,25 @@ public class ManagerRewardService {
                 request.getAllowDuplicateReward()
         );
         return new ManagerRewardResponse(reward);
+    }
+
+    @Transactional
+    public List<ManagerRewardResponse> updateRewards(RewardBatchUpdateRequest request) {
+        return request.getRewards().stream()
+                .map(item -> {
+                    Reward reward = getOwnedReward(item.getRewardId());
+                    reward.update(
+                            item.getName(),
+                            item.getDescription(),
+                            item.getWeight(),
+                            item.getPoolCount(),
+                            item.getStock(),
+                            item.getImageUrl(),
+                            item.getAllowDuplicateReward()
+                    );
+                    return new ManagerRewardResponse(reward);
+                })
+                .toList();
     }
 
     @Transactional
