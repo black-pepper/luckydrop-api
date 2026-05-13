@@ -11,7 +11,8 @@ public class RewardResponse {
     private final Long id;
     private final String name;
     private final String description;
-    private final int weight;
+    private final Integer weight;
+    private final Integer poolCount;
     private final Double probability;
     private final Integer stock;
     private final boolean unlimited;
@@ -22,8 +23,9 @@ public class RewardResponse {
         this.name = reward.getName();
         this.description = reward.getDescription();
         this.weight = reward.getWeight();
+        this.poolCount = reward.getPoolCount();
         this.probability = totalWeight > 0
-                ? Math.round((double) reward.getWeight() / totalWeight * 10000.0) / 100.0
+                ? Math.round((double) reward.getEffectiveWeight() / totalWeight * 10000.0) / 100.0
                 : 0.0;
         this.stock = reward.getStock();
         this.unlimited = reward.isUnlimitedStock();
@@ -31,9 +33,9 @@ public class RewardResponse {
     }
 
     public static List<RewardResponse> of(List<Reward> rewards) {
-        int totalWeight = rewards.stream().mapToInt(Reward::getWeight).sum();
+        int total = rewards.stream().mapToInt(Reward::getEffectiveWeight).sum();
         return rewards.stream()
-                .map(r -> new RewardResponse(r, totalWeight))
+                .map(r -> new RewardResponse(r, total))
                 .toList();
     }
 }

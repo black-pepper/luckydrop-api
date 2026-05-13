@@ -1,6 +1,7 @@
 package com.luckydrop.api.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.luckydrop.api.common.exception.ErrorCode;
 import com.luckydrop.api.common.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -49,6 +50,20 @@ public class LoggingAuthenticationEntryPoint implements AuthenticationEntryPoint
             return;
         }
 
+        if (hasMessageContaining(authException, "expired")) {
+            if (logFailure) {
+                log.warn("Token expired. method={}, uri={}",
+                        request.getMethod(),
+                        request.getRequestURI());
+            }
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.getWriter().write(OBJECT_MAPPER.writeValueAsString(
+                    ApiResponse.fail(ErrorCode.TOKEN_EXPIRED.getMessage())));
+            return;
+        }
+
         if (logFailure) {
             log.warn("Authentication failed. method={}, uri={}",
                     request.getMethod(),
@@ -64,6 +79,15 @@ public class LoggingAuthenticationEntryPoint implements AuthenticationEntryPoint
     private static boolean hasCause(Throwable throwable, Class<? extends Throwable> type) {
         for (Throwable cause = throwable.getCause(); cause != null; cause = cause.getCause()) {
             if (type.isInstance(cause)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasMessageContaining(Throwable throwable, String keyword) {
+        for (Throwable t = throwable; t != null; t = t.getCause()) {
+            if (t.getMessage() != null && t.getMessage().contains(keyword)) {
                 return true;
             }
         }

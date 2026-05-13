@@ -37,8 +37,11 @@ public class Reward {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
-    private int weight;
+    @Column
+    private Integer weight;
+
+    @Column(name = "pool_count")
+    private Integer poolCount;
 
     @Column
     private Integer stock;
@@ -70,7 +73,8 @@ public class Reward {
     public Reward(
             String name,
             String description,
-            int weight,
+            Integer weight,
+            Integer poolCount,
             Integer stock,
             String image,
             Boolean allowDuplicateReward,
@@ -79,11 +83,20 @@ public class Reward {
         this.name = name;
         this.description = description;
         this.weight = weight;
+        this.poolCount = poolCount;
         this.stock = stock;
         this.image = image;
         this.active = true;
         this.allowDuplicateReward = allowDuplicateReward != null ? allowDuplicateReward : true;
         this.content = content;
+    }
+
+    public boolean isLotteryMode() {
+        return this.poolCount != null;
+    }
+
+    public int getEffectiveWeight() {
+        return isLotteryMode() ? this.poolCount : this.weight;
     }
 
     public boolean isUnlimitedStock() {
@@ -101,7 +114,8 @@ public class Reward {
     public void update(
             String name,
             String description,
-            int weight,
+            Integer weight,
+            Integer poolCount,
             Integer stock,
             String image,
             Boolean allowDuplicateReward
@@ -109,6 +123,7 @@ public class Reward {
         this.name = name;
         this.description = description;
         this.weight = weight;
+        this.poolCount = poolCount;
         this.stock = stock;
         this.image = image;
         this.allowDuplicateReward = allowDuplicateReward != null ? allowDuplicateReward : true;
@@ -129,5 +144,12 @@ public class Reward {
             }
             this.stock--;
         }
+    }
+
+    public void decreasePoolCount() {
+        if (this.poolCount == null || this.poolCount <= 0) {
+            throw new DrawEventException(ErrorCode.REWARD_OUT_OF_STOCK);
+        }
+        this.poolCount--;
     }
 }
