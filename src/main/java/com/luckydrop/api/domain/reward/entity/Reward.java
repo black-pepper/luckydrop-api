@@ -77,6 +77,7 @@ public class Reward {
             Integer poolCount,
             Integer stock,
             String image,
+            Boolean active,
             Boolean allowDuplicateReward,
             Content content
     ) {
@@ -86,7 +87,7 @@ public class Reward {
         this.poolCount = poolCount;
         this.stock = stock;
         this.image = image;
-        this.active = true;
+        this.active = active != null ? active : true;
         this.allowDuplicateReward = allowDuplicateReward != null ? allowDuplicateReward : true;
         this.content = content;
     }
@@ -118,6 +119,7 @@ public class Reward {
             Integer poolCount,
             Integer stock,
             String image,
+            Boolean active,
             Boolean allowDuplicateReward
     ) {
         this.name = name;
@@ -126,6 +128,7 @@ public class Reward {
         this.poolCount = poolCount;
         this.stock = stock;
         this.image = image;
+        this.active = active != null ? active : true;
         this.allowDuplicateReward = allowDuplicateReward != null ? allowDuplicateReward : true;
     }
 

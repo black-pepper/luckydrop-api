@@ -101,7 +101,7 @@ class ManagerDrawResultControllerTest {
 
         Content content = new Content("CONTENT-001", ContentType.DRAW, owner, "Lucky Drop", "Event");
         InvitationCode invitationCode = new InvitationCode("INVITE-001", "참가자A", content, 3, null);
-        Reward reward = new Reward("경품", "설명", 1, 5, null, true, content);
+        Reward reward = new Reward("경품", "설명", 1, null, 5, null, true, true, content);
 
         DrawResult drawResult = DrawResult.builder()
                 .content(content)

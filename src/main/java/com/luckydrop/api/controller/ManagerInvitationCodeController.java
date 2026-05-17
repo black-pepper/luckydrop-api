@@ -1,6 +1,7 @@
 package com.luckydrop.api.controller;
 
 import com.luckydrop.api.common.response.ApiResponse;
+import com.luckydrop.api.domain.invitationcode.dto.InvitationCodeBatchCreateRequest;
 import com.luckydrop.api.domain.invitationcode.dto.InvitationCodeCreateRequest;
 import com.luckydrop.api.domain.invitationcode.dto.InvitationCodeResponse;
 import com.luckydrop.api.domain.invitationcode.dto.InvitationCodeUpdateRequest;
@@ -48,6 +49,12 @@ public class ManagerInvitationCodeController {
     public ResponseEntity<ApiResponse<InvitationCodeResponse>> createInvitationCode(
             @RequestBody @Valid InvitationCodeCreateRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(invitationCodeManagerService.createInvitationCode(request)));
+    }
+
+    @PostMapping("/batch")
+    public ResponseEntity<ApiResponse<List<InvitationCodeResponse>>> createInvitationCodes(
+            @RequestBody @Valid InvitationCodeBatchCreateRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(invitationCodeManagerService.createInvitationCodes(request)));
     }
 
     @PutMapping("/{invitationCodeId}")

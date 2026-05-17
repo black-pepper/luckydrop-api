@@ -4,6 +4,8 @@ import com.luckydrop.api.common.exception.DrawEventException;
 import com.luckydrop.api.common.exception.ErrorCode;
 import com.luckydrop.api.domain.content.entity.Content;
 import com.luckydrop.api.domain.content.repository.ContentRepository;
+import com.luckydrop.api.domain.invitationcode.dto.InvitationCodeBatchCreateItem;
+import com.luckydrop.api.domain.invitationcode.dto.InvitationCodeBatchCreateRequest;
 import com.luckydrop.api.domain.invitationcode.dto.InvitationCodeCreateRequest;
 import com.luckydrop.api.domain.invitationcode.dto.InvitationCodeResponse;
 import com.luckydrop.api.domain.invitationcode.dto.InvitationCodeUpdateRequest;
@@ -13,7 +15,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,14 +48,34 @@ public class ManagerInvitationCodeService {
         if (invitationCodeRepository.existsByContentIdAndCodeAndDeletedAtIsNull(content.getId(), request.getCode())) {
             throw new DrawEventException(ErrorCode.DRAW_CODE_DUPLICATE);
         }
-        InvitationCode invitationCode = new InvitationCode(
+        InvitationCode invitationCode = buildInvitationCode(
                 request.getCode(),
                 request.getName(),
-                content,
                 request.getAllowedDrawCount(),
-                request.getExpiresAt()
+                request.getExpiresAt(),
+                content
         );
         return new InvitationCodeResponse(invitationCodeRepository.save(invitationCode));
+    }
+
+    @Transactional
+    public List<InvitationCodeResponse> createInvitationCodes(InvitationCodeBatchCreateRequest request) {
+        Content content = getOwnedContent(request.getContentCode());
+        validateDuplicateCodes(request.getInvitationCodes(), content.getId());
+
+        List<InvitationCode> invitationCodes = request.getInvitationCodes().stream()
+                .map(item -> buildInvitationCode(
+                        item.getCode(),
+                        item.getName(),
+                        item.getAllowedDrawCount(),
+                        item.getExpiresAt(),
+                        content
+                ))
+                .toList();
+
+        return invitationCodeRepository.saveAll(invitationCodes).stream()
+                .map(InvitationCodeResponse::new)
+                .toList();
     }
 
     @Transactional
@@ -69,6 +94,38 @@ public class ManagerInvitationCodeService {
     public void deleteInvitationCode(Long invitationCodeId) {
         InvitationCode invitationCode = getOwnedInvitationCode(invitationCodeId);
         invitationCode.delete();
+    }
+
+    private void validateDuplicateCodes(List<InvitationCodeBatchCreateItem> items, Long contentId) {
+        Set<String> codes = items.stream()
+                .map(InvitationCodeBatchCreateItem::getCode)
+                .collect(Collectors.toSet());
+        if (codes.size() != items.size()) {
+            throw new DrawEventException(ErrorCode.DRAW_CODE_DUPLICATE);
+        }
+
+        boolean hasExistingCode = items.stream()
+                .map(InvitationCodeBatchCreateItem::getCode)
+                .anyMatch(code -> invitationCodeRepository.existsByContentIdAndCodeAndDeletedAtIsNull(contentId, code));
+        if (hasExistingCode) {
+            throw new DrawEventException(ErrorCode.DRAW_CODE_DUPLICATE);
+        }
+    }
+
+    private InvitationCode buildInvitationCode(
+            String code,
+            String name,
+            int allowedDrawCount,
+            OffsetDateTime expiresAt,
+            Content content
+    ) {
+        return new InvitationCode(
+                code,
+                name,
+                content,
+                allowedDrawCount,
+                expiresAt
+        );
     }
 
     private Content getOwnedContent(String contentCode) {

@@ -56,6 +56,7 @@ public class ManagerRewardService {
                 request.getPoolCount(),
                 request.getStock(),
                 request.getImageUrl(),
+                request.getActive(),
                 request.getAllowDuplicateReward()
         );
         return new ManagerRewardResponse(reward);
@@ -73,6 +74,7 @@ public class ManagerRewardService {
                             item.getPoolCount(),
                             item.getStock(),
                             item.getImageUrl(),
+                            item.getActive(),
                             item.getAllowDuplicateReward()
                     );
                     return new ManagerRewardResponse(reward);
@@ -111,6 +113,7 @@ public class ManagerRewardService {
                 item.getPoolCount(),
                 item.getStock(),
                 item.getImageUrl(),
+                item.getActive(),
                 item.getAllowDuplicateReward(),
                 content
         );
