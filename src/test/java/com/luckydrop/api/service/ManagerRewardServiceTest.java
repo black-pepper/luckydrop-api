@@ -161,7 +161,7 @@ class ManagerRewardServiceTest {
     }
 
     private Reward createReward(Long id, Content content, boolean active) {
-        Reward reward = new Reward("기본 경품", "설명", 3, 10, "https://example.com/reward.png", false, content);
+        Reward reward = new Reward("기본 경품", "설명", 3, null, 10, "https://example.com/reward.png", false, false, content);
         ReflectionTestUtils.setField(reward, "id", id);
         ReflectionTestUtils.setField(reward, "active", active);
         ReflectionTestUtils.setField(reward, "createdAt", OffsetDateTime.parse("2026-04-12T09:10:00+09:00"));

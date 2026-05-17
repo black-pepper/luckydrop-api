@@ -155,7 +155,7 @@ class ManagerDrawResultServiceTest {
     }
 
     private DrawResult createDrawResult(Long id, Content content, InvitationCode invitationCode, boolean delivered) {
-        Reward reward = new Reward("경품", "설명", 1, 5, null, true, content);
+        Reward reward = new Reward("경품", "설명", 1, null, 5, null, true, true, content);
         ReflectionTestUtils.setField(reward, "id", 100L);
 
         DrawResult drawResult = DrawResult.builder()

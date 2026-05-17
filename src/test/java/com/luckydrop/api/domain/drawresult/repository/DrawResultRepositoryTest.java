@@ -74,9 +74,9 @@ class DrawResultRepositoryTest {
         entityManager.persist(inviteB);
         entityManager.persist(otherInvite);
 
-        coffeeReward = new Reward("커피 쿠폰", "설명", 1, 5, null, true, targetContent);
-        mugReward = new Reward("머그컵", "설명", 1, 5, null, true, targetContent);
-        Reward otherReward = new Reward("외부 경품", "설명", 1, 5, null, true, otherContent);
+        coffeeReward = new Reward("커피 쿠폰", "설명", 1, null, 5, null, true, true, targetContent);
+        mugReward = new Reward("머그컵", "설명", 1, null, 5, null, true, true, targetContent);
+        Reward otherReward = new Reward("외부 경품", "설명", 1, null, 5, null, true, true, otherContent);
         entityManager.persist(coffeeReward);
         entityManager.persist(mugReward);
         entityManager.persist(otherReward);
