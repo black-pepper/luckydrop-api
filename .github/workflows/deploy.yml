@@ -20,30 +20,28 @@ jobs:
           token: ${{ secrets.CLOUDTYPE_TOKEN }}
           project: peppercode01/luckydrop
           stage: main
-          yaml: >
+          yaml: |
             name: luckydrop-api-dev
-
             app: java@21
-
             options:
               ports: 8080
               env:
                 - name: DB_PASSWORD
-                  secret: ${{ secrets.DB_PASSWORD }}
+                  secret: DB_PASSWORD_DEV
                 - name: DB_URL
-                  value: ${{ secrets.DB_URL }}
+                  secret: DB_URL_DEV
                 - name: DB_USERNAME
-                  value: ${{ secrets.DB_USERNAME }}
+                  secret: DB_USERNAME_DEV
                 - name: SPRING_PROFILES_ACTIVE
                   value: develop
                 - name: SUPABASE_ISSUER_URI
-                  value: ${{ secrets.SUPABASE_ISSUER_URI }}
+                  secret: SUPABASE_ISSUER_URI_DEV
                 - name: SUPABASE_JWK_SET_URI
-                  value: ${{ secrets.SUPABASE_JWT_AUDIENCE }}
+                  secret: SUPABASE_JWK_SET_URI_DEV
                 - name: SUPABASE_JWT_AUDIENCE
                   value: authenticated
                 - name: SUPABASE_SERVICE_ROLE_KEY
-                  secret: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+                  secret: SUPABASE_SERVICE_ROLE_KEY_DEV
               buildenv: []
             context:
               git:
