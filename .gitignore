@@ -41,5 +41,14 @@ out/
 ### Other ###
 /node_modules/
 .claude/
+.codex
+.env
+.env.*
+!.env.example
+*.log
+*.pem
+*.key
+*.p12
+*.jks
 package-lock.json
 package.json
