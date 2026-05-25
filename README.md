@@ -133,4 +133,7 @@ src/
 
 ## 라이선스
 
-본 프로젝트의 라이선스는 해당 기관/개인의 정책에 따릅니다.
+이 프로젝트는 [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0)에 따라 배포됩니다.
+
+비상업적 목적의 사용, 복제, 수정이 허용됩니다.  
+다만 작성자의 명시적인 허가 없이 상업적 목적의 사용은 금지됩니다.
