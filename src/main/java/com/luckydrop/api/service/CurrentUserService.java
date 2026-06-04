@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -28,13 +29,13 @@ public class CurrentUserService {
     @Transactional
     public User getCurrentUserEntity() {
         UUID authId = currentUserAuthIdProvider.getCurrentAuthId();
-        return userRepository.findByAuthIdAndDeletedAtIsNull(authId)
-                .orElseGet(() -> {
-                    User newUser = new User();
-                    newUser.setAuthId(authId);
-                    newUser.setName(currentUserAuthIdProvider.getCurrentUserDisplayName());
-                    return userRepository.save(newUser);
-                });
+        return getOrCreateUser(authId);
+    }
+
+    @Transactional
+    public Optional<User> getCurrentUserEntityOptional() {
+        return currentUserAuthIdProvider.getCurrentAuthIdOptional()
+                .map(this::getOrCreateUser);
     }
 
     @Transactional
@@ -54,5 +55,15 @@ public class CurrentUserService {
                 .orElseThrow(() -> new DrawEventException(ErrorCode.USER_NOT_FOUND));
         user.setName(request.getName());
         return user;
+    }
+
+    private User getOrCreateUser(UUID authId) {
+        return userRepository.findByAuthIdAndDeletedAtIsNull(authId)
+                .orElseGet(() -> {
+                    User newUser = new User();
+                    newUser.setAuthId(authId);
+                    newUser.setName(currentUserAuthIdProvider.getCurrentUserDisplayName());
+                    return userRepository.save(newUser);
+                });
     }
 }
