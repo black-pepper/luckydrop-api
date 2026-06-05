@@ -1,6 +1,7 @@
 package com.luckydrop.api.service;
 
 import com.luckydrop.api.domain.inquiry.dto.InquiryRequest;
+import com.luckydrop.api.domain.inquiry.dto.InquiryResponse;
 import com.luckydrop.api.domain.inquiry.entity.Inquiry;
 import com.luckydrop.api.domain.inquiry.entity.InquiryStatus;
 import com.luckydrop.api.domain.inquiry.repository.InquiryRepository;
@@ -8,6 +9,8 @@ import com.luckydrop.api.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,5 +28,15 @@ public class InquiryService {
                 .status(InquiryStatus.PENDING)
                 .user(user)
                 .build());
+    }
+
+    @Transactional(readOnly = true)
+    public List<InquiryResponse> getMyInquiries() {
+        Long currentUserId = currentUserService.getCurrentUserEntity().getId();
+
+        return inquiryRepository.findAllByUserIdOrderByCreatedAtDesc(currentUserId)
+                .stream()
+                .map(InquiryResponse::new)
+                .toList();
     }
 }
