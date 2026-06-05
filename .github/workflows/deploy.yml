@@ -48,5 +48,5 @@ jobs:
             context:
               git:
                 url: git@github.com:${{ github.repository }}.git
-                ref: ${{ github.ref }}
+                branch: develop
               preset: java-springboot
