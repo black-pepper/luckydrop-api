@@ -93,6 +93,8 @@ create table public.inquiries (
   title character varying not null,
   content character varying not null,
   status character varying not null default 'PENDING',
+  answer text null,
+  answered_at timestamp with time zone null,
   user_id bigint null,
   constraint inquiry_pkey primary key (id),
   constraint inquiry_user_id_fkey foreign key (user_id) references public.users (id),

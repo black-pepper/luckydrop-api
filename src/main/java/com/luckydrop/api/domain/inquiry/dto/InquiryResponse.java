@@ -16,6 +16,8 @@ public class InquiryResponse {
     private final String title;
     private final String content;
     private final InquiryStatus status;
+    private final String answer;
+    private final OffsetDateTime answeredAt;
 
     public InquiryResponse(Inquiry inquiry) {
         this.id = inquiry.getId();
@@ -24,5 +26,7 @@ public class InquiryResponse {
         this.title = inquiry.getTitle();
         this.content = inquiry.getContent();
         this.status = inquiry.getStatus();
+        this.answer = inquiry.getAnswer();
+        this.answeredAt = inquiry.getAnsweredAt();
     }
 }

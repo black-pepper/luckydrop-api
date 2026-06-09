@@ -1,5 +1,7 @@
 package com.luckydrop.api.service;
 
+import com.luckydrop.api.common.exception.DrawEventException;
+import com.luckydrop.api.common.exception.ErrorCode;
 import com.luckydrop.api.domain.inquiry.dto.InquiryRequest;
 import com.luckydrop.api.domain.inquiry.dto.InquiryResponse;
 import com.luckydrop.api.domain.inquiry.entity.Inquiry;
@@ -38,5 +40,15 @@ public class InquiryService {
                 .stream()
                 .map(InquiryResponse::new)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public InquiryResponse getMyInquiry(Long inquiryId) {
+        Long currentUserId = currentUserService.getCurrentUserEntity().getId();
+
+        Inquiry inquiry = inquiryRepository.findByIdAndUserId(inquiryId, currentUserId)
+                .orElseThrow(() -> new DrawEventException(ErrorCode.INQUIRY_NOT_FOUND));
+
+        return new InquiryResponse(inquiry);
     }
 }
