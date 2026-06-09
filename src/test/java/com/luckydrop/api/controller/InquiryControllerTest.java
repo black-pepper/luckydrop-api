@@ -46,6 +46,8 @@ class InquiryControllerTest {
                 .build();
         ReflectionTestUtils.setField(inquiry, "id", 10L);
         ReflectionTestUtils.setField(inquiry, "createdAt", OffsetDateTime.parse("2026-06-05T10:00:00Z"));
+        ReflectionTestUtils.setField(inquiry, "answer", "답변 내용");
+        ReflectionTestUtils.setField(inquiry, "answeredAt", OffsetDateTime.parse("2026-06-09T03:30:00Z"));
 
         when(inquiryService.getMyInquiries()).thenReturn(List.of(new InquiryResponse(inquiry)));
 
@@ -57,6 +59,36 @@ class InquiryControllerTest {
                 .andExpect(jsonPath("$.data[0].type").value("BUG"))
                 .andExpect(jsonPath("$.data[0].title").value("버그 문의"))
                 .andExpect(jsonPath("$.data[0].content").value("버그 내용"))
-                .andExpect(jsonPath("$.data[0].status").value("PENDING"));
+                .andExpect(jsonPath("$.data[0].status").value("PENDING"))
+                .andExpect(jsonPath("$.data[0].answer").value("답변 내용"))
+                .andExpect(jsonPath("$.data[0].answeredAt").value("2026-06-09T03:30:00Z"));
+    }
+
+    @Test
+    void 내_문의_상세를_조회한다() throws Exception {
+        Inquiry inquiry = Inquiry.builder()
+                .type(InquiryType.BUG)
+                .title("버그 문의")
+                .content("버그 내용")
+                .status(InquiryStatus.DONE)
+                .build();
+        ReflectionTestUtils.setField(inquiry, "id", 10L);
+        ReflectionTestUtils.setField(inquiry, "createdAt", OffsetDateTime.parse("2026-06-05T10:00:00Z"));
+        ReflectionTestUtils.setField(inquiry, "answer", "확인 후 수정 완료했습니다.");
+        ReflectionTestUtils.setField(inquiry, "answeredAt", OffsetDateTime.parse("2026-06-09T03:30:00Z"));
+
+        when(inquiryService.getMyInquiry(10L)).thenReturn(new InquiryResponse(inquiry));
+
+        mockMvc.perform(get("/user/inquiries/{inquiryId}", 10L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.id").value(10))
+                .andExpect(jsonPath("$.data.createdAt").value("2026-06-05T10:00:00Z"))
+                .andExpect(jsonPath("$.data.type").value("BUG"))
+                .andExpect(jsonPath("$.data.title").value("버그 문의"))
+                .andExpect(jsonPath("$.data.content").value("버그 내용"))
+                .andExpect(jsonPath("$.data.status").value("DONE"))
+                .andExpect(jsonPath("$.data.answer").value("확인 후 수정 완료했습니다."))
+                .andExpect(jsonPath("$.data.answeredAt").value("2026-06-09T03:30:00Z"));
     }
 }

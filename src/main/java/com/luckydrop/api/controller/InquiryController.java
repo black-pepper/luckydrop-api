@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,5 +35,13 @@ public class InquiryController {
     @GetMapping("/user/inquiries")
     public ResponseEntity<ApiResponse<List<InquiryResponse>>> getMyInquiries() {
         return ResponseEntity.ok(ApiResponse.ok(inquiryService.getMyInquiries()));
+    }
+
+    @Operation(summary = "내 문의 상세 조회", description = "현재 사용자가 작성한 문의를 상세 조회한다.")
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/user/inquiries/{inquiryId}")
+    public ResponseEntity<ApiResponse<InquiryResponse>> getMyInquiry(
+            @PathVariable Long inquiryId) {
+        return ResponseEntity.ok(ApiResponse.ok(inquiryService.getMyInquiry(inquiryId)));
     }
 }
