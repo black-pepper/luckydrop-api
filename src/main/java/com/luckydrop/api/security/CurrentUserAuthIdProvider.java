@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -24,6 +25,13 @@ public class CurrentUserAuthIdProvider {
         } catch (IllegalArgumentException e) {
             throw new DrawEventException(ErrorCode.UNAUTHORIZED);
         }
+    }
+
+    public Optional<UUID> getCurrentAuthIdOptional() {
+        return getCurrentJwtOptional()
+                .map(Jwt::getSubject)
+                .filter(StringUtils::hasText)
+                .flatMap(this::parseUuidOptional);
     }
 
     public String getCurrentUserDisplayName() {
@@ -49,6 +57,26 @@ public class CurrentUserAuthIdProvider {
             throw new DrawEventException(ErrorCode.UNAUTHORIZED);
         }
         return jwt;
+    }
+
+    private Optional<Jwt> getCurrentJwtOptional() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return Optional.empty();
+        }
+        Object principal = authentication.getPrincipal();
+        if (!(principal instanceof Jwt jwt)) {
+            return Optional.empty();
+        }
+        return Optional.of(jwt);
+    }
+
+    private Optional<UUID> parseUuidOptional(String value) {
+        try {
+            return Optional.of(UUID.fromString(value));
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
     }
 
     private String getStringClaim(Map<String, Object> map, String key) {
