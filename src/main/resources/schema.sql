@@ -102,9 +102,22 @@ create table public.inquiries (
   constraint inquiries_status_check check (status = any (array['PENDING'::character varying, 'DONE'::character varying]))
 );
 
+create table public.participation_histories (
+  id bigserial not null,
+  user_id bigint not null,
+  content_id bigint not null,
+  invitation_code character varying(100) not null,
+  accessed_at timestamp with time zone not null default now(),
+  constraint participation_histories_pkey primary key (id),
+  constraint participation_histories_user_id_content_id_invitation_code_key unique (user_id, content_id, invitation_code),
+  constraint participation_histories_user_id_fkey foreign key (user_id) references public.users (id),
+  constraint participation_histories_content_id_fkey foreign key (content_id) references public.contents (id)
+);
+
 create index if not exists idx_contents_code on public.contents using btree (code);
 create index if not exists idx_contents_user_id on public.contents using btree (user_id);
 create index if not exists idx_invitation_codes_content_id on public.invitation_codes using btree (content_id);
 create index if not exists idx_rewards_content_id on public.rewards using btree (content_id);
 create index if not exists idx_draw_results_content_id on public.draw_results using btree (content_id);
 create index if not exists idx_draw_results_reward_id on public.draw_results using btree (reward_id);
+create index if not exists idx_participation_histories_user_accessed_at on public.participation_histories using btree (user_id, accessed_at desc);

@@ -26,6 +26,9 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -41,6 +44,9 @@ class DrawServiceTest {
     @Mock
     private DrawAvailabilityService drawAvailabilityService;
 
+    @Mock
+    private ParticipationHistoryService participationHistoryService;
+
     @InjectMocks
     private DrawService drawService;
 
@@ -55,6 +61,9 @@ class DrawServiceTest {
                 .thenReturn(Optional.of(invitationCode));
         when(drawAvailabilityService.findAvailableRewards(invitationCode, true)).thenReturn(List.of(reward));
         when(drawResultRepository.findNextDrawNo(1L)).thenReturn(1);
+        doThrow(new RuntimeException("history failed"))
+                .when(participationHistoryService)
+                .recordCurrentUserAccessIfAuthenticated(any(Content.class), eq("INVITE-001"));
 
         DrawResponse response = drawService.draw(request);
 
