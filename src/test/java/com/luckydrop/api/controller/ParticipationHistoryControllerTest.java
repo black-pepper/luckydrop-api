@@ -55,10 +55,10 @@ class ParticipationHistoryControllerTest {
                         .param("size", "5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.content[0].contentId").value(10))
+                .andExpect(jsonPath("$.data.content[0].contentCode").value("CONTENT-001"))
                 .andExpect(jsonPath("$.data.content[0].contentTitle").value("행운의 룰렛 이벤트"))
                 .andExpect(jsonPath("$.data.content[0].contentStatus").value("ACTIVE"))
-                .andExpect(jsonPath("$.data.content[0].code").value("INVITE-001"));
+                .andExpect(jsonPath("$.data.content[0].invitationCode").value("INVITE-001"));
 
         ArgumentCaptor<com.luckydrop.api.domain.participationhistory.dto.ParticipationHistorySearchCondition> conditionCaptor =
                 ArgumentCaptor.forClass(com.luckydrop.api.domain.participationhistory.dto.ParticipationHistorySearchCondition.class);

@@ -43,8 +43,8 @@ public class CodeService {
             participationHistoryService.recordCurrentUserAccessIfAuthenticated(code.getContent(), code.getCode());
         } catch (Exception e) {
             log.warn(
-                    "Failed to record participation history - contentId: {}, invitationCode: {}",
-                    code.getContent().getId(),
+                    "Failed to record participation history - contentCode: {}, invitationCode: {}",
+                    code.getContent().getCode(),
                     code.getCode(),
                     e
             );

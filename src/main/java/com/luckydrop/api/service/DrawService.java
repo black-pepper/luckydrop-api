@@ -97,8 +97,8 @@ public class DrawService {
             );
         } catch (Exception e) {
             log.warn(
-                    "Failed to record participation history - contentId: {}, invitationCode: {}",
-                    invitationCode.getContent().getId(),
+                    "Failed to record participation history - contentCode: {}, invitationCode: {}",
+                    invitationCode.getContent().getCode(),
                     invitationCode.getCode(),
                     e
             );
