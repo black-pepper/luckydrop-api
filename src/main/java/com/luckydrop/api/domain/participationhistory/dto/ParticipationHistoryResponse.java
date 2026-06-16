@@ -9,20 +9,20 @@ import java.time.OffsetDateTime;
 @Getter
 public class ParticipationHistoryResponse {
 
-    private final Long contentId;
+    private final String contentCode;
     private final String contentTitle;
     private final ParticipationContentStatus contentStatus;
-    private final String code;
+    private final String invitationCode;
     private final OffsetDateTime accessedAt;
     private final OffsetDateTime startAt;
     private final OffsetDateTime endAt;
 
     public ParticipationHistoryResponse(ParticipationHistory history) {
         Content content = history.getContent();
-        this.contentId = content.getId();
+        this.contentCode = content.getCode();
         this.contentTitle = content.getTitle();
         this.contentStatus = ParticipationContentStatus.from(content);
-        this.code = history.getInvitationCode();
+        this.invitationCode = history.getInvitationCode();
         this.accessedAt = history.getAccessedAt();
         this.startAt = content.getStartAt();
         this.endAt = content.getEndAt();
