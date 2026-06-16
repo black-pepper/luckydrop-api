@@ -26,6 +26,7 @@ public class DrawService {
     private final InvitationCodeRepository invitationCodeRepository;
     private final DrawResultRepository drawResultRepository;
     private final DrawAvailabilityService drawAvailabilityService;
+    private final ParticipationHistoryService participationHistoryService;
     private final Random random = new Random();
 
     @Transactional
@@ -62,6 +63,7 @@ public class DrawService {
         drawResultRepository.save(result);
 
         invitationCode.use();
+        recordParticipationHistory(invitationCode);
 
         log.info(
                 "Draw completed - contentCode: {}, invitationCode: {}, reward: {}, drawNo: {}",
@@ -85,6 +87,22 @@ public class DrawService {
             }
         }
         return rewards.get(rewards.size() - 1);
+    }
+
+    private void recordParticipationHistory(InvitationCode invitationCode) {
+        try {
+            participationHistoryService.recordCurrentUserAccessIfAuthenticated(
+                    invitationCode.getContent(),
+                    invitationCode.getCode()
+            );
+        } catch (Exception e) {
+            log.warn(
+                    "Failed to record participation history - contentId: {}, invitationCode: {}",
+                    invitationCode.getContent().getId(),
+                    invitationCode.getCode(),
+                    e
+            );
+        }
     }
 
     private void validateInvitationCode(InvitationCode invitationCode) {
