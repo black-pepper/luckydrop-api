@@ -1,5 +1,6 @@
 package com.luckydrop.api.domain.inquiry.entity;
 
+import com.luckydrop.api.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,4 +38,14 @@ public class Inquiry {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private InquiryStatus status;
+
+    @Column(name = "answer")
+    private String answer;
+
+    @Column(name = "answered_at")
+    private OffsetDateTime answeredAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 }
