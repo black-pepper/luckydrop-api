@@ -3,6 +3,12 @@ on:
   push:
     branches:
       - develop
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'develop'
 permissions:
   contents: read
 jobs:
@@ -48,5 +54,5 @@ jobs:
             context:
               git:
                 url: git@github.com:${{ github.repository }}.git
-                branch: develop
+                branch: ${{ github.event.inputs.branch || 'develop' }}
               preset: java-springboot
