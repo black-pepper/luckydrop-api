@@ -1,4 +1,4 @@
-name: Deploy to cloudtype
+name: Deploy DEV to cloudtype
 on:
   push:
     branches:
