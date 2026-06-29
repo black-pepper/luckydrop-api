@@ -31,6 +31,13 @@ management:
 
 app:
   security:
+    draw-rate-limit:
+      enabled: true
+      trust-x-forwarded-for: false
+      ip-per-minute: 120
+      ip-content-per-minute: 30
+      ip-content-invitation-per-minute: 10
+      execute-ip-content-per-minute: 10
     public-paths:
       - /error
       - /api/draw/**
