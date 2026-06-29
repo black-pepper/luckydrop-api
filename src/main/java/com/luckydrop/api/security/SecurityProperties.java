@@ -13,6 +13,7 @@ import java.util.List;
 public class SecurityProperties {
 
     private final Cors cors = new Cors();
+    private final DrawRateLimit drawRateLimit = new DrawRateLimit();
     private final Jwt jwt = new Jwt();
     private final Supabase supabase = new Supabase();
     private List<String> publicPaths = new ArrayList<>();
@@ -21,6 +22,17 @@ public class SecurityProperties {
     @Setter
     public static class Cors {
         private List<String> allowedOrigins = new ArrayList<>();
+    }
+
+    @Getter
+    @Setter
+    public static class DrawRateLimit {
+        private boolean enabled = true;
+        private boolean trustXForwardedFor = false;
+        private int ipPerMinute = 120;
+        private int ipContentPerMinute = 30;
+        private int ipContentInvitationPerMinute = 10;
+        private int executeIpContentPerMinute = 10;
     }
 
     @Getter
