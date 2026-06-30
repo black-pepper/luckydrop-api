@@ -25,12 +25,16 @@ public class DrawRateLimitService {
 
     private final SecurityProperties.DrawRateLimit properties;
     private final Cache<RateLimitKey, Bucket> buckets;
-    private final Object consumeLock = new Object();
+    private final Cache<String, Object> consumeLocks;
 
     @Autowired
     public DrawRateLimitService(SecurityProperties securityProperties) {
         this.properties = securityProperties.getDrawRateLimit();
         this.buckets = Caffeine.newBuilder()
+                .maximumSize(this.properties.getBucketCacheMaxSize())
+                .expireAfterAccess(bucketTtl())
+                .build();
+        this.consumeLocks = Caffeine.newBuilder()
                 .maximumSize(this.properties.getBucketCacheMaxSize())
                 .expireAfterAccess(bucketTtl())
                 .build();
@@ -42,7 +46,7 @@ public class DrawRateLimitService {
         }
 
         String clientIp = resolveClientIp(request);
-        consumeAll(List.of(
+        consumeAll(clientIp, List.of(
                 new RateLimitRule(RateLimitType.IP, clientIp, null, null, properties.getIpPerMinute()),
                 new RateLimitRule(RateLimitType.IP_CONTENT, clientIp, contentCode, null, properties.getIpContentPerMinute())
         ));
@@ -54,7 +58,7 @@ public class DrawRateLimitService {
         }
 
         String clientIp = resolveClientIp(request);
-        consumeAll(List.of(
+        consumeAll(clientIp, List.of(
                 new RateLimitRule(RateLimitType.IP, clientIp, null, null, properties.getIpPerMinute()),
                 new RateLimitRule(RateLimitType.IP_CONTENT, clientIp, contentCode, null, properties.getIpContentPerMinute()),
                 new RateLimitRule(
@@ -73,7 +77,7 @@ public class DrawRateLimitService {
         }
 
         String clientIp = resolveClientIp(request);
-        consumeAll(List.of(
+        consumeAll(clientIp, List.of(
                 new RateLimitRule(RateLimitType.IP, clientIp, null, null, properties.getIpPerMinute()),
                 new RateLimitRule(RateLimitType.IP_CONTENT, clientIp, contentCode, null, properties.getIpContentPerMinute()),
                 new RateLimitRule(
@@ -105,7 +109,7 @@ public class DrawRateLimitService {
         return StringUtils.hasText(remoteAddr) ? remoteAddr : UNKNOWN_IP;
     }
 
-    private void consumeAll(List<RateLimitRule> rules) {
+    private void consumeAll(String clientIp, List<RateLimitRule> rules) {
         List<RateLimitRule> activeRules = rules.stream()
                 .filter(RateLimitRule::isEnabled)
                 .toList();
@@ -113,6 +117,7 @@ public class DrawRateLimitService {
             return;
         }
 
+        Object consumeLock = consumeLocks.get(clientIp, ignored -> new Object());
         synchronized (consumeLock) {
             List<Bucket> activeBuckets = activeRules.stream()
                     .map(rule -> buckets.get(rule.key(), ignored -> newBucket(rule.limit())))
