@@ -6,9 +6,7 @@ import com.luckydrop.api.security.SecurityProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
+import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -78,16 +76,29 @@ class DrawRateLimitServiceTest {
     }
 
     @Test
-    void allowsRequestsAgainAfterWindowExpires() {
+    void doesNotConsumeOtherLimitsWhenAnyLimitIsExceeded() {
         SecurityProperties properties = createSecurityProperties();
+        properties.getDrawRateLimit().setIpPerMinute(2);
+        properties.getDrawRateLimit().setIpContentPerMinute(1);
+        DrawRateLimitService service = createService(properties);
+
+        service.checkContentDetail(request("10.0.0.1"), "CONTENT-001");
+        assertRateLimitExceeded(() -> service.checkContentDetail(request("10.0.0.1"), "CONTENT-001"));
+
+        service.checkContentDetail(request("10.0.0.1"), "CONTENT-002");
+    }
+
+    @Test
+    void allowsRequestsAgainAfterWindowRefills() throws InterruptedException {
+        SecurityProperties properties = createSecurityProperties();
+        properties.getDrawRateLimit().setWindow(Duration.ofMillis(50));
         properties.getDrawRateLimit().setIpPerMinute(1);
-        MutableClock clock = new MutableClock(Instant.parse("2026-06-29T07:10:00Z"));
-        DrawRateLimitService service = new DrawRateLimitService(properties, clock);
+        DrawRateLimitService service = createService(properties);
 
         service.checkContentDetail(request("10.0.0.1"), "CONTENT-001");
         assertRateLimitExceeded(() -> service.checkContentDetail(request("10.0.0.1"), "CONTENT-002"));
 
-        clock.setInstant(Instant.parse("2026-06-29T07:11:00Z"));
+        Thread.sleep(80);
 
         service.checkContentDetail(request("10.0.0.1"), "CONTENT-002");
     }
@@ -121,7 +132,7 @@ class DrawRateLimitServiceTest {
     }
 
     private static DrawRateLimitService createService(SecurityProperties properties) {
-        return new DrawRateLimitService(properties, Clock.fixed(Instant.parse("2026-06-29T07:10:00Z"), ZoneId.of("UTC")));
+        return new DrawRateLimitService(properties);
     }
 
     private static SecurityProperties createSecurityProperties() {
@@ -139,30 +150,4 @@ class DrawRateLimitServiceTest {
         void run();
     }
 
-    private static class MutableClock extends Clock {
-        private Instant instant;
-
-        private MutableClock(Instant instant) {
-            this.instant = instant;
-        }
-
-        private void setInstant(Instant instant) {
-            this.instant = instant;
-        }
-
-        @Override
-        public ZoneId getZone() {
-            return ZoneId.of("UTC");
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            return this;
-        }
-
-        @Override
-        public Instant instant() {
-            return instant;
-        }
-    }
 }
