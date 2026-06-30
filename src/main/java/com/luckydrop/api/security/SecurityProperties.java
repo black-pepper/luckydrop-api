@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +30,8 @@ public class SecurityProperties {
     public static class DrawRateLimit {
         private boolean enabled = true;
         private boolean trustXForwardedFor = false;
+        private Duration window = Duration.ofMinutes(1);
+        private long bucketCacheMaxSize = 100_000;
         private int ipPerMinute = 120;
         private int ipContentPerMinute = 30;
         private int ipContentInvitationPerMinute = 10;

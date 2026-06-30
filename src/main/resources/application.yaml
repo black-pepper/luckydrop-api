@@ -34,6 +34,8 @@ app:
     draw-rate-limit:
       enabled: true
       trust-x-forwarded-for: false
+      window: 1m
+      bucket-cache-max-size: 100000
       ip-per-minute: 120
       ip-content-per-minute: 30
       ip-content-invitation-per-minute: 10

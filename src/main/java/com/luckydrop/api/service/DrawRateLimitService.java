@@ -1,40 +1,39 @@
 package com.luckydrop.api.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.luckydrop.api.common.exception.DrawEventException;
 import com.luckydrop.api.common.exception.ErrorCode;
 import com.luckydrop.api.security.SecurityProperties;
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.time.Clock;
 import java.time.Duration;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 public class DrawRateLimitService {
 
-    private static final Duration WINDOW = Duration.ofMinutes(1);
+    private static final Duration DEFAULT_WINDOW = Duration.ofMinutes(1);
     private static final String UNKNOWN_IP = "unknown";
     private static final String X_FORWARDED_FOR = "X-Forwarded-For";
 
     private final SecurityProperties.DrawRateLimit properties;
-    private final Clock clock;
-    private final ConcurrentHashMap<RateLimitKey, WindowCounter> counters = new ConcurrentHashMap<>();
+    private final Cache<RateLimitKey, Bucket> buckets;
+    private final Object consumeLock = new Object();
 
     @Autowired
     public DrawRateLimitService(SecurityProperties securityProperties) {
-        this(securityProperties, Clock.systemUTC());
-    }
-
-    DrawRateLimitService(SecurityProperties securityProperties, Clock clock) {
         this.properties = securityProperties.getDrawRateLimit();
-        this.clock = clock;
+        this.buckets = Caffeine.newBuilder()
+                .maximumSize(this.properties.getBucketCacheMaxSize())
+                .expireAfterAccess(bucketTtl())
+                .build();
     }
 
     public void checkContentDetail(HttpServletRequest request, String contentCode) {
@@ -43,8 +42,10 @@ public class DrawRateLimitService {
         }
 
         String clientIp = resolveClientIp(request);
-        consume(RateLimitType.IP, clientIp, null, null, properties.getIpPerMinute());
-        consume(RateLimitType.IP_CONTENT, clientIp, contentCode, null, properties.getIpContentPerMinute());
+        consumeAll(List.of(
+                new RateLimitRule(RateLimitType.IP, clientIp, null, null, properties.getIpPerMinute()),
+                new RateLimitRule(RateLimitType.IP_CONTENT, clientIp, contentCode, null, properties.getIpContentPerMinute())
+        ));
     }
 
     public void checkInvitationCodeRequest(HttpServletRequest request, String contentCode, String invitationCode) {
@@ -53,15 +54,17 @@ public class DrawRateLimitService {
         }
 
         String clientIp = resolveClientIp(request);
-        consume(RateLimitType.IP, clientIp, null, null, properties.getIpPerMinute());
-        consume(RateLimitType.IP_CONTENT, clientIp, contentCode, null, properties.getIpContentPerMinute());
-        consume(
-                RateLimitType.IP_CONTENT_INVITATION,
-                clientIp,
-                contentCode,
-                invitationCode,
-                properties.getIpContentInvitationPerMinute()
-        );
+        consumeAll(List.of(
+                new RateLimitRule(RateLimitType.IP, clientIp, null, null, properties.getIpPerMinute()),
+                new RateLimitRule(RateLimitType.IP_CONTENT, clientIp, contentCode, null, properties.getIpContentPerMinute()),
+                new RateLimitRule(
+                        RateLimitType.IP_CONTENT_INVITATION,
+                        clientIp,
+                        contentCode,
+                        invitationCode,
+                        properties.getIpContentInvitationPerMinute()
+                )
+        ));
     }
 
     public void checkExecuteRequest(HttpServletRequest request, String contentCode, String invitationCode) {
@@ -70,22 +73,24 @@ public class DrawRateLimitService {
         }
 
         String clientIp = resolveClientIp(request);
-        consume(RateLimitType.IP, clientIp, null, null, properties.getIpPerMinute());
-        consume(RateLimitType.IP_CONTENT, clientIp, contentCode, null, properties.getIpContentPerMinute());
-        consume(
-                RateLimitType.IP_CONTENT_INVITATION,
-                clientIp,
-                contentCode,
-                invitationCode,
-                properties.getIpContentInvitationPerMinute()
-        );
-        consume(
-                RateLimitType.EXECUTE_IP_CONTENT,
-                clientIp,
-                contentCode,
-                null,
-                properties.getExecuteIpContentPerMinute()
-        );
+        consumeAll(List.of(
+                new RateLimitRule(RateLimitType.IP, clientIp, null, null, properties.getIpPerMinute()),
+                new RateLimitRule(RateLimitType.IP_CONTENT, clientIp, contentCode, null, properties.getIpContentPerMinute()),
+                new RateLimitRule(
+                        RateLimitType.IP_CONTENT_INVITATION,
+                        clientIp,
+                        contentCode,
+                        invitationCode,
+                        properties.getIpContentInvitationPerMinute()
+                ),
+                new RateLimitRule(
+                        RateLimitType.EXECUTE_IP_CONTENT,
+                        clientIp,
+                        contentCode,
+                        null,
+                        properties.getExecuteIpContentPerMinute()
+                )
+        ));
     }
 
     String resolveClientIp(HttpServletRequest request) {
@@ -100,53 +105,47 @@ public class DrawRateLimitService {
         return StringUtils.hasText(remoteAddr) ? remoteAddr : UNKNOWN_IP;
     }
 
-    private void consume(
-            RateLimitType type,
-            String clientIp,
-            String contentCode,
-            String invitationCode,
-            int limit
-    ) {
-        if (limit <= 0) {
+    private void consumeAll(List<RateLimitRule> rules) {
+        List<RateLimitRule> activeRules = rules.stream()
+                .filter(RateLimitRule::isEnabled)
+                .toList();
+        if (activeRules.isEmpty()) {
             return;
         }
 
-        long nowMillis = clock.millis();
-        long windowStartMillis = currentWindowStartMillis(nowMillis);
-        cleanupExpired(windowStartMillis);
-
-        RateLimitKey key = new RateLimitKey(type, clientIp, contentCode, invitationCode);
-        AtomicBoolean exceeded = new AtomicBoolean(false);
-
-        counters.compute(key, (ignored, counter) -> {
-            if (counter == null || counter.isBefore(windowStartMillis)) {
-                return new WindowCounter(windowStartMillis, 1);
+        synchronized (consumeLock) {
+            List<Bucket> activeBuckets = activeRules.stream()
+                    .map(rule -> buckets.get(rule.key(), ignored -> newBucket(rule.limit())))
+                    .toList();
+            if (activeBuckets.stream().anyMatch(bucket -> bucket.getAvailableTokens() < 1)) {
+                throw new DrawEventException(ErrorCode.RATE_LIMIT_EXCEEDED);
             }
-            if (counter.count() >= limit) {
-                exceeded.set(true);
-                return counter;
+            boolean consumed = activeBuckets.stream().allMatch(bucket -> bucket.tryConsume(1));
+            if (!consumed) {
+                throw new DrawEventException(ErrorCode.RATE_LIMIT_EXCEEDED);
             }
-            return counter.increment();
-        });
-
-        if (exceeded.get()) {
-            throw new DrawEventException(ErrorCode.RATE_LIMIT_EXCEEDED);
         }
     }
 
-    private long currentWindowStartMillis(long nowMillis) {
-        long windowMillis = WINDOW.toMillis();
-        return nowMillis - (nowMillis % windowMillis);
+    private Bucket newBucket(int limit) {
+        return Bucket.builder()
+                .addLimit(Bandwidth.builder()
+                        .capacity(limit)
+                        .refillGreedy(limit, window())
+                        .build())
+                .build();
     }
 
-    private void cleanupExpired(long currentWindowStartMillis) {
-        Iterator<Map.Entry<RateLimitKey, WindowCounter>> iterator = counters.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<RateLimitKey, WindowCounter> entry = iterator.next();
-            if (entry.getValue().isBefore(currentWindowStartMillis)) {
-                iterator.remove();
-            }
+    private Duration window() {
+        Duration window = properties.getWindow();
+        if (window == null || window.isZero() || window.isNegative()) {
+            return DEFAULT_WINDOW;
         }
+        return window;
+    }
+
+    private Duration bucketTtl() {
+        return window().multipliedBy(2);
     }
 
     private enum RateLimitType {
@@ -169,13 +168,19 @@ public class DrawRateLimitService {
         }
     }
 
-    private record WindowCounter(long windowStartMillis, int count) {
-        private boolean isBefore(long currentWindowStartMillis) {
-            return windowStartMillis < currentWindowStartMillis;
+    private record RateLimitRule(
+            RateLimitType type,
+            String clientIp,
+            String contentCode,
+            String invitationCode,
+            int limit
+    ) {
+        private boolean isEnabled() {
+            return limit > 0;
         }
 
-        private WindowCounter increment() {
-            return new WindowCounter(windowStartMillis, count + 1);
+        private RateLimitKey key() {
+            return new RateLimitKey(type, clientIp, contentCode, invitationCode);
         }
     }
 }
