@@ -19,7 +19,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "participant")
+@Table(name = "participants")
 @Getter
 @NoArgsConstructor
 @SQLRestriction("deleted_at IS NULL")
