@@ -45,6 +45,18 @@ create table public.invitation_codes (
   constraint invitation_codes_used_lte_allowed_check check (used_draw_count <= allowed_draw_count)
 );
 
+create table public.participant (
+  id bigserial not null,
+  participant_name text not null,
+  memo text null,
+  user_id bigint not null,
+  created_at timestamp with time zone not null default now(),
+  updated_at timestamp with time zone not null default now(),
+  deleted_at timestamp with time zone null,
+  constraint participant_pkey primary key (id),
+  constraint participant_user_id_fkey foreign key (user_id) references public.users (id)
+);
+
 create table public.rewards (
   id bigserial not null,
   name character varying(200) not null,
@@ -117,6 +129,7 @@ create table public.participation_histories (
 create index if not exists idx_contents_code on public.contents using btree (code);
 create index if not exists idx_contents_user_id on public.contents using btree (user_id);
 create index if not exists idx_invitation_codes_content_id on public.invitation_codes using btree (content_id);
+create index if not exists idx_participant_user_id on public.participant using btree (user_id);
 create index if not exists idx_rewards_content_id on public.rewards using btree (content_id);
 create index if not exists idx_draw_results_content_id on public.draw_results using btree (content_id);
 create index if not exists idx_draw_results_reward_id on public.draw_results using btree (reward_id);
