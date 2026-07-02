@@ -28,6 +28,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -139,12 +140,13 @@ class DrawControllerTest {
 
     @Test
     void returnsTooManyRequestsWhenRateLimitIsExceeded() throws Exception {
-        doThrow(new DrawEventException(ErrorCode.RATE_LIMIT_EXCEEDED))
+        doThrow(new DrawEventException(ErrorCode.RATE_LIMIT_EXCEEDED, 60L))
                 .when(drawRateLimitService)
                 .checkContentDetail(any(HttpServletRequest.class), eq("CONTENT-001"));
 
         mockMvc.perform(get("/api/draw/contents/{contentCode}", "CONTENT-001"))
                 .andExpect(status().isTooManyRequests())
+                .andExpect(header().string("Retry-After", "60"))
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.message").value("요청이 너무 많습니다. 잠시 후 다시 시도해주세요."));
 
