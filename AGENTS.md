@@ -10,6 +10,9 @@ When the Notion connector is available, read only the Notion pages that are rele
 - `backend-project-context`
   - Page: https://app.notion.com/p/36b41a6b4b058147ad58e0eeb6aa7939
   - Use for backend stack, project scope, domain model, API/auth rules, ownership checks, schema handling, rate limiting, and backend-specific constraints.
+- `prompt-template`
+  - Page: https://app.notion.com/p/Prompt-Template-36b41a6b4b05816098c4f7836f475207
+  - Use as the template for Notion documents when work is large, needs to be split into smaller tasks, or requires frontend/backend work requests.
 
 If the connector cannot fetch the pages, state that clearly before making assumptions and continue from the local codebase.
 
