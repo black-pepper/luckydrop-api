@@ -13,13 +13,17 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "participants")
+@Table(name = "participant_lists")
 @Getter
 @NoArgsConstructor
 @SQLRestriction("deleted_at IS NULL")
@@ -29,8 +33,9 @@ public class Participant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "participant_name", nullable = false)
-    private String participantName;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "participant_names", nullable = false)
+    private List<String> participantNames = new ArrayList<>();
 
     @Column
     private String memo;
@@ -50,14 +55,14 @@ public class Participant {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
-    public Participant(String participantName, String memo, User user) {
-        this.participantName = participantName;
+    public Participant(List<String> participantNames, String memo, User user) {
+        this.participantNames = new ArrayList<>(participantNames);
         this.memo = memo;
         this.user = user;
     }
 
-    public void update(String participantName, String memo) {
-        this.participantName = participantName;
+    public void update(List<String> participantNames, String memo) {
+        this.participantNames = new ArrayList<>(participantNames);
         this.memo = memo;
     }
 

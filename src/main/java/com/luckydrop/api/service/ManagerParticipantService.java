@@ -40,7 +40,7 @@ public class ManagerParticipantService {
     public ParticipantResponse createParticipant(ParticipantCreateRequest request) {
         User user = currentUserService.getCurrentUserEntity();
         Participant participant = new Participant(
-                request.getParticipantName(),
+                request.getParticipantNames(),
                 request.getMemo(),
                 user
         );
@@ -53,7 +53,7 @@ public class ManagerParticipantService {
         return request.getParticipants()
                 .stream()
                 .map(participant -> new Participant(
-                        participant.getParticipantName(),
+                        participant.getParticipantNames(),
                         participant.getMemo(),
                         user
                 ))
@@ -65,7 +65,7 @@ public class ManagerParticipantService {
     @Transactional
     public ParticipantResponse updateParticipant(Long participantId, ParticipantUpdateRequest request) {
         Participant participant = getOwnedParticipant(participantId);
-        participant.update(request.getParticipantName(), request.getMemo());
+        participant.update(request.getParticipantNames(), request.getMemo());
         return new ParticipantResponse(participant);
     }
 
