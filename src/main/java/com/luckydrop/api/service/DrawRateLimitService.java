@@ -9,12 +9,15 @@ import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import io.github.bucket4j.EstimationProbe;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class DrawRateLimitService {
@@ -122,14 +125,31 @@ public class DrawRateLimitService {
             List<Bucket> activeBuckets = activeRules.stream()
                     .map(rule -> buckets.get(rule.key(), ignored -> newBucket(rule.limit())))
                     .toList();
-            if (activeBuckets.stream().anyMatch(bucket -> bucket.getAvailableTokens() < 1)) {
-                throw new DrawEventException(ErrorCode.RATE_LIMIT_EXCEEDED);
+            long nanosToWaitForRefill = activeBuckets.stream()
+                    .map(bucket -> bucket.estimateAbilityToConsume(1))
+                    .filter(probe -> !probe.canBeConsumed())
+                    .mapToLong(EstimationProbe::getNanosToWaitForRefill)
+                    .max()
+                    .orElse(0L);
+            if (nanosToWaitForRefill > 0) {
+                throw rateLimitExceeded(nanosToWaitForRefill);
             }
             boolean consumed = activeBuckets.stream().allMatch(bucket -> bucket.tryConsume(1));
             if (!consumed) {
-                throw new DrawEventException(ErrorCode.RATE_LIMIT_EXCEEDED);
+                long retryAfterNanos = activeBuckets.stream()
+                        .map(bucket -> bucket.estimateAbilityToConsume(1))
+                        .filter(probe -> !probe.canBeConsumed())
+                        .mapToLong(EstimationProbe::getNanosToWaitForRefill)
+                        .max()
+                        .orElse(window().toNanos());
+                throw rateLimitExceeded(retryAfterNanos);
             }
         }
+    }
+
+    private DrawEventException rateLimitExceeded(long nanosToWaitForRefill) {
+        long retryAfterSeconds = Math.max(1L, TimeUnit.NANOSECONDS.toSeconds(nanosToWaitForRefill - 1) + 1);
+        return new DrawEventException(ErrorCode.RATE_LIMIT_EXCEEDED, retryAfterSeconds);
     }
 
     private Bucket newBucket(int limit) {

@@ -126,9 +126,10 @@ class DrawRateLimitServiceTest {
 
     private static void assertRateLimitExceeded(RateLimitedAction action) {
         assertThatThrownBy(action::run)
-                .isInstanceOf(DrawEventException.class)
-                .extracting("errorCode")
-                .isEqualTo(ErrorCode.RATE_LIMIT_EXCEEDED);
+                .isInstanceOfSatisfying(DrawEventException.class, exception -> {
+                    assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.RATE_LIMIT_EXCEEDED);
+                    assertThat(exception.getRetryAfterSeconds()).isPositive();
+                });
     }
 
     private static DrawRateLimitService createService(SecurityProperties properties) {
