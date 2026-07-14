@@ -7,6 +7,8 @@ import com.luckydrop.api.common.exception.ErrorCode;
 import com.luckydrop.api.security.SecurityProperties;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import io.github.bucket4j.EstimationProbe;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,7 @@ public class DrawRateLimitService {
     private final Cache<RateLimitKey, Bucket> buckets;
     private final Cache<String, Object> consumeLocks;
 
+    @Autowired
     public DrawRateLimitService(SecurityProperties securityProperties) {
         this.properties = securityProperties.getDrawRateLimit();
         this.buckets = Caffeine.newBuilder()
