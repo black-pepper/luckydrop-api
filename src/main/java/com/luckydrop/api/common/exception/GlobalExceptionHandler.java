@@ -2,6 +2,7 @@ package com.luckydrop.api.common.exception;
 
 import com.luckydrop.api.common.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -16,9 +17,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleDrawEventException(DrawEventException e) {
         log.warn("DrawEventException: {}", e.getMessage());
         ErrorCode errorCode = e.getErrorCode();
-        return ResponseEntity
-                .status(errorCode.getStatus())
-                .body(ApiResponse.fail(errorCode.getMessage()));
+        ResponseEntity.BodyBuilder response = ResponseEntity.status(errorCode.getStatus());
+        if (e.getRetryAfterSeconds() != null) {
+            response.header(HttpHeaders.RETRY_AFTER, e.getRetryAfterSeconds().toString());
+        }
+        return response.body(ApiResponse.fail(errorCode.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
