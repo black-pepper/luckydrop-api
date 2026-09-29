@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import java.util.List;
 public class SecurityProperties {
 
     private final Cors cors = new Cors();
+    private final DrawRateLimit drawRateLimit = new DrawRateLimit();
     private final Jwt jwt = new Jwt();
     private final Supabase supabase = new Supabase();
     private List<String> publicPaths = new ArrayList<>();
@@ -21,6 +23,19 @@ public class SecurityProperties {
     @Setter
     public static class Cors {
         private List<String> allowedOrigins = new ArrayList<>();
+    }
+
+    @Getter
+    @Setter
+    public static class DrawRateLimit {
+        private boolean enabled = true;
+        private boolean trustXForwardedFor = false;
+        private Duration window = Duration.ofMinutes(1);
+        private long bucketCacheMaxSize = 100_000;
+        private int ipPerMinute = 120;
+        private int ipContentPerMinute = 30;
+        private int ipContentInvitationPerMinute = 10;
+        private int executeIpContentPerMinute = 10;
     }
 
     @Getter

@@ -16,7 +16,7 @@ public class SwaggerDevelopConfig {
     OpenAPI developOpenApi() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Luckydrop API")
+                        .title("LuckyDrop API")
                         .version("v1"))
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth", new SecurityScheme()

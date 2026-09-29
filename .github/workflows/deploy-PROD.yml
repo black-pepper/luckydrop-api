@@ -1,0 +1,50 @@
+name: ⚠️ Deploy PROD to cloudtype ⚠️
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Connect deploy key
+        uses: cloudtype-github-actions/connect@v1
+        with:
+          token: ${{ secrets.CLOUDTYPE_TOKEN }}
+          ghtoken: ${{ secrets.GHP_TOKEN }}
+      - name: Deploy
+        uses: cloudtype-github-actions/deploy@v1
+        with:
+          token: ${{ secrets.CLOUDTYPE_TOKEN }}
+          project: peppercode01/luckydrop
+          stage: main
+          yaml: |
+            name: luckydrop-api
+            app: java@21
+            options:
+              ports: 8080
+              env:
+                - name: DB_PASSWORD
+                  secret: DB_PASSWORD
+                - name: DB_URL
+                  secret: DB_URL
+                - name: DB_USERNAME
+                  secret: DB_USERNAME
+                - name: SPRING_PROFILES_ACTIVE
+                  value: prod
+                - name: SUPABASE_ISSUER_URI
+                  secret: SUPABASE_ISSUER_URI
+                - name: SUPABASE_JWK_SET_URI
+                  secret: SUPABASE_JWK_SET_URI
+                - name: SUPABASE_JWT_AUDIENCE
+                  value: authenticated
+                - name: SUPABASE_SERVICE_ROLE_KEY
+                  secret: SUPABASE_SERVICE_ROLE_KEY
+              buildenv: []
+            context:
+              git:
+                url: git@github.com:${{ github.repository }}.git
+                branch: main
+              preset: java-springboot
