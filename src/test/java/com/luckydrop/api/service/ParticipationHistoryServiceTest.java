@@ -43,7 +43,7 @@ class ParticipationHistoryServiceTest {
     @Test
     void recordAccessUpdatesAccessedAtWhenHistoryAlreadyExists() {
         ParticipationHistory history = createHistory();
-        OffsetDateTime before = OffsetDateTime.parse("2026-06-16T10:30:00+09:00");
+        OffsetDateTime before = OffsetDateTime.now().minusDays(1);
         ReflectionTestUtils.setField(history, "accessedAt", before);
 
         when(participationHistoryRepository.findByUserIdAndContentIdAndInvitationCode(1L, 10L, "INVITE-001"))
@@ -57,7 +57,7 @@ class ParticipationHistoryServiceTest {
     @Test
     void recordAccessRetriesUpdateWhenUniqueConstraintIsViolated() {
         ParticipationHistory history = createHistory();
-        OffsetDateTime before = OffsetDateTime.parse("2026-06-16T10:30:00+09:00");
+        OffsetDateTime before = OffsetDateTime.now().minusDays(1);
         ReflectionTestUtils.setField(history, "accessedAt", before);
 
         User user = new User();

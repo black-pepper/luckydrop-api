@@ -76,9 +76,10 @@ class ParticipationHistoryControllerTest {
         User user = new User();
         ReflectionTestUtils.setField(user, "id", 1L);
 
+        OffsetDateTime now = OffsetDateTime.now();
         Content content = new Content("CONTENT-001", ContentType.DRAW, null, "행운의 룰렛 이벤트", "Event",
-                OffsetDateTime.parse("2026-06-01T00:00:00+09:00"),
-                OffsetDateTime.parse("2026-06-30T23:59:59+09:00"));
+                now.minusDays(1),
+                now.plusDays(10));
         ReflectionTestUtils.setField(content, "id", 10L);
 
         ParticipationHistory history = new ParticipationHistory(user, content, "INVITE-001");
