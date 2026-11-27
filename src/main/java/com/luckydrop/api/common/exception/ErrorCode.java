@@ -26,6 +26,7 @@ public enum ErrorCode {
     INQUIRY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 문의입니다."),
     DRAW_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 초대 코드입니다."),
     DRAW_CODE_DUPLICATE(HttpStatus.CONFLICT, "이미 존재하는 초대 코드입니다."),
+    PARTICIPANT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 참여자입니다."),
     REWARD_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 보상입니다."),
     REWARD_OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "보상 재고가 부족합니다."),
     INVITATION_CODE_USAGE_EXCEEDED(HttpStatus.BAD_REQUEST, "초대 코드의 사용 횟수를 초과했습니다."),
